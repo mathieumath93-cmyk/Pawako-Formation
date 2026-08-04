@@ -59,23 +59,31 @@ async function startServer() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // API Admin Auth
+  // API Admin Auth - Strictly single authorized email mathieumath93@gmail.com
   app.post('/api/admin/login', (req: Request, res: Response) => {
-    const { password } = req.body;
+    const { email, password } = req.body;
     const currentPass = getAdminPassword();
     const authorizedEmail = 'mathieumath93@gmail.com';
 
-    if (
-      password === currentPass ||
-      password === 'admin123' ||
-      password === authorizedEmail ||
-      password?.toLowerCase() === authorizedEmail.toLowerCase()
-    ) {
-      const adminToken = crypto.randomBytes(24).toString('hex');
-      res.json({ success: true, adminToken, message: 'Authentification réussie' });
-    } else {
-      res.status(401).json({ success: false, message: 'Mot de passe administrateur incorrect.' });
+    const inputEmail = email ? email.toString().trim().toLowerCase() : '';
+    const inputPassword = password ? password.toString() : '';
+
+    if (inputEmail !== authorizedEmail) {
+      return res.status(403).json({
+        success: false,
+        message: "Accès refusé. Seul l'email mathieumath93@gmail.com est autorisé à se connecter au panneau d'administration."
+      });
     }
+
+    if (inputPassword !== currentPass) {
+      return res.status(401).json({
+        success: false,
+        message: "Mot de passe administrateur incorrect."
+      });
+    }
+
+    const adminToken = crypto.randomBytes(24).toString('hex');
+    res.json({ success: true, adminToken, message: 'Authentification administrateur réussie' });
   });
 
   // Change Admin Password Endpoint

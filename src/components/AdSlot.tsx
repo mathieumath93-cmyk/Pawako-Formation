@@ -18,7 +18,9 @@ export const AdSlot: React.FC<AdSlotProps> = ({ position, adsEnabled = true }) =
       .catch((err) => console.error('Failed to load ad settings:', err));
   }, []);
 
-  if (!adsEnabled || (settings && !settings.globalAdsEnabled)) {
+  const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+
+  if (!adsEnabled || isAdminRoute || (settings && !settings.globalAdsEnabled)) {
     return null;
   }
 

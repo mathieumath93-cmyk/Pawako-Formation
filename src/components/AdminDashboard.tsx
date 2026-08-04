@@ -28,6 +28,7 @@ interface AdminDashboardProps {
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
+  const [adminEmailInput, setAdminEmailInput] = useState<string>('mathieumath93@gmail.com');
   const [adminPasswordInput, setAdminPasswordInput] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
@@ -86,7 +87,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: adminPasswordInput })
+        body: JSON.stringify({
+          email: adminEmailInput,
+          password: adminPasswordInput
+        })
       });
       const data = await res.json();
 
@@ -306,15 +310,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           <form onSubmit={handleAdminLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
-                Mot de Passe ou Email Administrateur
+                Email Administrateur Autorisé
+              </label>
+              <input
+                type="email"
+                value={adminEmailInput}
+                onChange={(e) => setAdminEmailInput(e.target.value)}
+                placeholder="ex: mathieumath93@gmail.com"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-400"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Mot de Passe Administrateur
               </label>
               <input
                 type="password"
                 value={adminPasswordInput}
                 onChange={(e) => setAdminPasswordInput(e.target.value)}
-                placeholder="Saisissez votre mot de passe d'accès..."
+                placeholder="Entrez votre mot de passe d'accès..."
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-400"
-                autoFocus
                 required
               />
             </div>
@@ -796,6 +813,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
             <p className="text-xs text-slate-400">
               Collez vos scripts Adsterra ci-dessous pour activer le Popunder, la Social Bar et les bannières publicitaires sur PAWAKO FORMATION.
             </p>
+          </div>
+
+          <div className="mb-6 p-3.5 bg-sky-400/10 border border-sky-400/20 rounded-xl text-xs text-sky-200 flex items-center gap-2.5">
+            <ShieldCheck className="w-5 h-5 text-sky-400 shrink-0" />
+            <span><strong>Isolation Publicitaire :</strong> Les publicités sont diffusées <u>uniquement</u> sur les interfaces de lecture des documents PDF (Flipping Book) pour les étudiants, et sont totalement désactivées dans l'espace d'administration.</span>
           </div>
 
           {adSaveStatus && (

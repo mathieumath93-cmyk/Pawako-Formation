@@ -118,20 +118,11 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
 
       {/* Bento Grid Demo Documents Section */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <div>
-            <span className="text-[10px] font-bold tracking-widest text-sky-400 uppercase font-mono">
-              Catalogue PAWAKO FORMATION
-            </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-white">Modules de Formation Disponibles</h2>
-          </div>
-          <button
-            onClick={() => navigate('/admin')}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold rounded-xl border border-slate-800 transition flex items-center space-x-2"
-          >
-            <Lock className="w-3.5 h-3.5 text-sky-400" />
-            <span>Tableau d'Administration</span>
-          </button>
+        <div className="mb-8">
+          <span className="text-[10px] font-bold tracking-widest text-sky-400 uppercase font-mono">
+            Catalogue PAWAKO FORMATION
+          </span>
+          <h2 className="text-xl sm:text-2xl font-bold text-white">Modules de Formation Disponibles</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

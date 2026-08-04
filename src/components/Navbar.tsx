@@ -85,17 +85,19 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute, navigate }) => {
                 <span>Home</span>
               </button>
 
-              <button
-                onClick={() => navigate('/admin')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5 ${
-                  currentRoute.startsWith('/admin')
-                    ? 'bg-sky-400 text-slate-950 font-bold shadow-md shadow-sky-400/20'
-                    : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800'
-                }`}
-              >
-                <Lock className="w-3.5 h-3.5 text-sky-400 group-hover:text-slate-950" />
-                <span>Admin Dashboard</span>
-              </button>
+              {!currentRoute.startsWith('/doc/') && (
+                <button
+                  onClick={() => navigate('/admin')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5 ${
+                    currentRoute.startsWith('/admin')
+                      ? 'bg-sky-400 text-slate-950 font-bold shadow-md shadow-sky-400/20'
+                      : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800'
+                  }`}
+                >
+                  <Lock className="w-3.5 h-3.5 text-sky-400 group-hover:text-slate-950" />
+                  <span>Espace Admin</span>
+                </button>
+              )}
             </div>
 
           </div>
