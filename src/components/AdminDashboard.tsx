@@ -303,41 +303,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
             </div>
           )}
 
-          {/* Quick Helper Badges for One-Click Login */}
-          <div className="mb-4 p-3 bg-sky-400/10 border border-sky-400/20 rounded-xl text-xs text-slate-300">
-            <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider block mb-1 font-mono">
-              Accès Rapide Autorisé :
-            </span>
-            <div className="flex flex-col gap-1.5 text-[11px]">
-              <button
-                type="button"
-                onClick={() => setAdminPasswordInput('admin123')}
-                className="text-left font-mono text-sky-300 hover:underline flex items-center justify-between bg-slate-950/60 px-2.5 py-1 rounded border border-slate-800"
-              >
-                <span>Mot de passe par défaut : <strong>admin123</strong></span>
-                <span className="text-[9px] bg-sky-400/20 text-sky-300 px-1.5 py-0.5 rounded">Utiliser</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setAdminPasswordInput('mathieumath93@gmail.com')}
-                className="text-left font-mono text-sky-300 hover:underline flex items-center justify-between bg-slate-950/60 px-2.5 py-1 rounded border border-slate-800"
-              >
-                <span>Email administrateur : <strong>mathieumath93@gmail.com</strong></span>
-                <span className="text-[9px] bg-sky-400/20 text-sky-300 px-1.5 py-0.5 rounded">Utiliser</span>
-              </button>
-            </div>
-          </div>
-
           <form onSubmit={handleAdminLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
-                Mot de Passe Admin ou Email
+                Mot de Passe ou Email Administrateur
               </label>
               <input
                 type="password"
                 value={adminPasswordInput}
                 onChange={(e) => setAdminPasswordInput(e.target.value)}
-                placeholder="Entrez admin123 ou votre email..."
+                placeholder="Saisissez votre mot de passe d'accès..."
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-sky-400"
                 autoFocus
                 required
@@ -1023,7 +998,7 @@ CREATE POLICY "Deny public storage access" ON storage.objects
                 Nouveau Mot de Passe Administrateur
               </label>
               <input
-                type="text"
+                type="password"
                 value={newAdminPassInput}
                 onChange={(e) => setNewAdminPassInput(e.target.value)}
                 placeholder="Entrez votre nouveau mot de passe (min 4 caractères)"
