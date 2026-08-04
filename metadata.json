@@ -1,0 +1,6 @@
+{
+  "name": "PAWAKO FORMATION",
+  "description": "Plateforme sécurisée de consultation de PDF de formation avec effet Flipping Book, intégration de vidéos de cours et monétisation Adsterra (Bannières, Popunder, Social Bar).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
