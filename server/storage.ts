@@ -267,36 +267,38 @@ export function deleteDocument(id: string): boolean {
 
 export function getAdSettings(): AdSettings {
   const defaultSettings: AdSettings = {
-    adsterraTopScript: `<!-- Adsterra Top Banner Slot (728x90) -->
-<div class="p-3 bg-slate-900/80 border border-sky-400/30 rounded-lg text-center my-2 shadow-sm">
-  <span class="text-[10px] tracking-widest text-sky-400 uppercase font-semibold block mb-1">Espace Bannière Adsterra - Haut</span>
-  <div class="text-xs text-slate-300 font-mono">Slot Adsterra 728x90 / Native Leaderboard</div>
-</div>`,
-    adsterraBottomScript: `<!-- Adsterra Bottom Banner Slot (300x250) -->
-<div class="p-3 bg-slate-900/80 border border-sky-400/30 rounded-lg text-center my-2 shadow-sm">
-  <span class="text-[10px] tracking-widest text-sky-400 uppercase font-semibold block mb-1">Espace Bannière Adsterra - Bas</span>
-  <div class="text-xs text-slate-300 font-mono">Slot Adsterra 300x250 / Rectangle Canvas</div>
-</div>`,
-    adsterraBetweenScript: `<!-- Adsterra Inter-Page Banner Slot -->
-<div class="p-3 bg-slate-900/90 border border-sky-400/30 rounded-lg text-center my-3 shadow-md">
-  <span class="text-[10px] tracking-widest text-sky-400 uppercase font-semibold block mb-1">Espace Bannière Adsterra - Entre Pages (Flipbook)</span>
-  <div class="text-xs text-slate-300 font-mono">Slot Adsterra 468x60 / Pause In-Reading</div>
-</div>`,
-    adsterraPopunderScript: `<!-- Adsterra Popunder Script (Exemple de code Adsterra Popunder) -->
-<script type="text/javascript">
-  console.log("[Adsterra Popunder] Script active sur PAWAKO FORMATION");
+    adsterraTopScript: `<script>
+  atOptions = {
+    'key' : '680e97f00624ac2199215bf0455dd328',
+    'format' : 'iframe',
+    'height' : 50,
+    'width' : 320,
+    'params' : {}
+  };
 </script>
-<div class="p-2 bg-amber-500/10 border border-amber-500/30 rounded text-amber-400 text-[10px] font-mono text-center">
-  ⚡ Popunder Adsterra pret (Declenchement automatique sur clic)
-</div>`,
-    adsterraSocialBarScript: `<!-- Adsterra Social Bar Script (Format flottant engageant) -->
-<div class="fixed bottom-4 right-4 z-50 p-3 bg-slate-900/95 border border-sky-400/40 rounded-xl shadow-2xl backdrop-blur-md max-w-xs flex items-center space-x-3">
-  <div class="w-3 h-3 rounded-full bg-emerald-400 animate-ping shrink-0" />
-  <div className="text-xs text-slate-200">
-    <strong class="text-sky-400 block font-sans">PAWAKO FORMATION Offer</strong>
-    <span class="text-[11px] text-slate-400">Publicite Social Bar Adsterra active</span>
-  </div>
-</div>`,
+<script src="https://www.highperformanceformat.com/680e97f00624ac2199215bf0455dd328/invoke.js"></script>`,
+    adsterraBottomScript: `<script>
+  atOptions = {
+    'key' : '680e97f00624ac2199215bf0455dd328',
+    'format' : 'iframe',
+    'height' : 50,
+    'width' : 320,
+    'params' : {}
+  };
+</script>
+<script src="https://www.highperformanceformat.com/680e97f00624ac2199215bf0455dd328/invoke.js"></script>`,
+    adsterraBetweenScript: `<script>
+  atOptions = {
+    'key' : '680e97f00624ac2199215bf0455dd328',
+    'format' : 'iframe',
+    'height' : 50,
+    'width' : 320,
+    'params' : {}
+  };
+</script>
+<script src="https://www.highperformanceformat.com/680e97f00624ac2199215bf0455dd328/invoke.js"></script>`,
+    adsterraPopunderScript: `<script src="https://pl30676303.effectivecpmnetwork.com/79/61/3f/79613fe1e0b72dcb4be7aa74bb8a46cb.js"></script>`,
+    adsterraSocialBarScript: `<script src="https://pl30676304.effectivecpmnetwork.com/15/32/cf/1532cf24b2702691bb65ff5b5b8efab2.js"></script>`,
     globalAdsEnabled: true
   };
 

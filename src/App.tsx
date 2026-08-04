@@ -4,6 +4,7 @@ import { HomePage } from './components/HomePage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { PasswordProtection } from './components/PasswordProtection';
 import { PdfViewer } from './components/PdfViewer';
+import { AdSlot } from './components/AdSlot';
 import { DocumentPublicInfo } from './types';
 
 export default function App() {
@@ -154,6 +155,10 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* Global Ad Slots (Popunder & Floating Social Bar) */}
+      <AdSlot position="popunder" />
+      <AdSlot position="social-bar" />
     </div>
   );
 }
