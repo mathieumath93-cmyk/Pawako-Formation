@@ -492,7 +492,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           }`}
         >
           <DollarSign className="w-4 h-4" />
-          <span>Paramètres Adsterra</span>
+          <span>Monétisation (AdSense & Adsterra)</span>
         </button>
 
         <button
@@ -839,22 +839,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         </div>
       )}
 
-      {/* TAB 3: ADSTERRA SETTINGS */}
+      {/* TAB 3: ADSTERRA & GOOGLE ADSENSE SETTINGS */}
       {activeTab === 'adsterra' && (
         <div className="max-w-3xl mx-auto bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
           <div className="mb-6">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-sky-400" />
-              Configuration Monétisation Adsterra (Bannière, Popunder, Social Bar)
+              Configuration Monétisation (Google AdSense & Adsterra)
             </h2>
-            <p className="text-xs text-slate-400">
-              Collez vos scripts Adsterra ci-dessous pour activer le Popunder, la Social Bar et les bannières publicitaires sur PAWAKO FORMATION.
+            <p className="text-xs text-slate-400 mt-1">
+              Google AdSense est actif globalement (<code>ca-pub-1082234399162159</code>) dans le <code>&lt;head&gt;</code> de l'application. Vous pouvez également coller vos blocs d'annonces personnalisés Google AdSense ou vos scripts Adsterra ci-dessous.
             </p>
           </div>
 
-          <div className="mb-6 p-3.5 bg-sky-400/10 border border-sky-400/20 rounded-xl text-xs text-sky-200 flex items-center gap-2.5">
-            <ShieldCheck className="w-5 h-5 text-sky-400 shrink-0" />
-            <span><strong>Isolation Publicitaire :</strong> Les publicités sont diffusées <u>uniquement</u> sur les interfaces de lecture des documents PDF (Flipping Book) pour les étudiants, et sont totalement désactivées dans l'espace d'administration.</span>
+          <div className="mb-6 p-4 bg-sky-400/10 border border-sky-400/20 rounded-xl text-xs text-sky-200 flex flex-col gap-2">
+            <div className="flex items-center gap-2 font-bold text-sky-400">
+              <ShieldCheck className="w-5 h-5 shrink-0" />
+              <span>Google AdSense Intégré & Isolations des Annoceurs</span>
+            </div>
+            <p className="text-[11px] text-slate-300">
+              Le script principal Google AdSense est inséré dans les balises <code>&lt;head&gt;</code> de toutes les pages. Les blocs d'annonces ci-dessous sont diffusés sur la liseuse de documents et cours PDF. Toutes les annonces sont désactivées au sein du panneau d'administration.
+            </p>
           </div>
 
           {adSaveStatus && (
@@ -874,72 +879,72 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                 type="checkbox"
                 checked={adSettings.globalAdsEnabled}
                 onChange={(e) => setAdSettings({ ...adSettings, globalAdsEnabled: e.target.checked })}
-                className="w-5 h-5 text-sky-400 rounded focus:ring-sky-400"
+                className="w-5 h-5 text-sky-400 rounded focus:ring-sky-400 cursor-pointer"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-sky-300 mb-1">
-                Espace Popunder Adsterra (&lt;AdSlot position="popunder" /&gt;)
-              </label>
-              <textarea
-                value={adSettings.adsterraPopunderScript}
-                onChange={(e) => setAdSettings({ ...adSettings, adsterraPopunderScript: e.target.value })}
-                rows={3}
-                placeholder="<!-- Collez le script Popunder Adsterra ici -->"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-sky-400 font-mono focus:outline-none focus:border-sky-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-sky-300 mb-1">
-                Espace Social Bar Adsterra (&lt;AdSlot position="social-bar" /&gt;)
-              </label>
-              <textarea
-                value={adSettings.adsterraSocialBarScript}
-                onChange={(e) => setAdSettings({ ...adSettings, adsterraSocialBarScript: e.target.value })}
-                rows={3}
-                placeholder="<!-- Collez le script Social Bar Adsterra ici -->"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-sky-400 font-mono focus:outline-none focus:border-sky-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Bannière Supérieure Adsterra (&lt;AdSlot position="top" /&gt;)
+                Espace Supérieur (Haut) - Code AdSense / Adsterra (&lt;AdSlot position="top" /&gt;)
               </label>
               <textarea
                 value={adSettings.adsterraTopScript}
                 onChange={(e) => setAdSettings({ ...adSettings, adsterraTopScript: e.target.value })}
                 rows={3}
-                placeholder="<!-- Collez le script Bannière Haut Adsterra ici -->"
+                placeholder="<!-- Collez un bloc <ins class='adsbygoogle'> ou un script Adsterra ici -->"
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-sky-400"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Bannière Inter-Page Flipbook (&lt;AdSlot position="between-pages" /&gt;)
+              <label className="block text-xs font-semibold text-sky-300 mb-1">
+                Espace Inter-Page Flipbook - Code AdSense / Adsterra (&lt;AdSlot position="between-pages" /&gt;)
               </label>
               <textarea
                 value={adSettings.adsterraBetweenScript}
                 onChange={(e) => setAdSettings({ ...adSettings, adsterraBetweenScript: e.target.value })}
                 rows={3}
-                placeholder="<!-- Collez le script Inter-Page Adsterra ici -->"
+                placeholder="<!-- Collez un bloc <ins class='adsbygoogle'> ou un script Adsterra ici -->"
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-sky-400"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Bannière Inférieure Adsterra (&lt;AdSlot position="bottom" /&gt;)
+              <label className="block text-xs font-semibold text-sky-300 mb-1">
+                Espace Inférieur (Bas) - Code AdSense / Adsterra (&lt;AdSlot position="bottom" /&gt;)
               </label>
               <textarea
                 value={adSettings.adsterraBottomScript}
                 onChange={(e) => setAdSettings({ ...adSettings, adsterraBottomScript: e.target.value })}
                 rows={3}
-                placeholder="<!-- Collez le script Bannière Bas Adsterra ici -->"
+                placeholder="<!-- Collez un bloc <ins class='adsbygoogle'> ou un script Adsterra ici -->"
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-sky-400"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-sky-300 mb-1">
+                Espace Popunder (&lt;AdSlot position="popunder" /&gt;)
+              </label>
+              <textarea
+                value={adSettings.adsterraPopunderScript}
+                onChange={(e) => setAdSettings({ ...adSettings, adsterraPopunderScript: e.target.value })}
+                rows={3}
+                placeholder="<!-- Collez le script Popunder Adsterra/Réseau ici -->"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-sky-400 font-mono focus:outline-none focus:border-sky-400"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-sky-300 mb-1">
+                Espace Social Bar / Format Flottant (&lt;AdSlot position="social-bar" /&gt;)
+              </label>
+              <textarea
+                value={adSettings.adsterraSocialBarScript}
+                onChange={(e) => setAdSettings({ ...adSettings, adsterraSocialBarScript: e.target.value })}
+                rows={3}
+                placeholder="<!-- Collez le script Social Bar / Flottant ici -->"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-sky-400 font-mono focus:outline-none focus:border-sky-400"
               />
             </div>
 

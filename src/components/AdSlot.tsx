@@ -33,15 +33,23 @@ export const AdSlot: React.FC<AdSlotProps> = ({ position, adsEnabled = true }) =
     else if (position === 'social-bar') rawScript = settings.adsterraSocialBarScript;
   }
 
-  // Inject user scripts into container safely if custom HTML / script tags provided
+  // Inject user scripts into container safely if custom HTML / script tags / AdSense tags provided
   useEffect(() => {
     if (!adRef.current || !rawScript) return;
     adRef.current.innerHTML = '';
 
-    if (rawScript.includes('<script')) {
+    if (rawScript.includes('<script') || rawScript.includes('<ins')) {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = rawScript;
 
+      // First append non-script child nodes (like <ins class="adsbygoogle"> or <div>)
+      Array.from(tempDiv.childNodes).forEach((node) => {
+        if (node.nodeName !== 'SCRIPT') {
+          adRef.current?.appendChild(node.cloneNode(true));
+        }
+      });
+
+      // Then append and execute script nodes
       const scripts = Array.from(tempDiv.querySelectorAll('script'));
       scripts.forEach((oldScript) => {
         const newScript = document.createElement('script');
@@ -53,6 +61,15 @@ export const AdSlot: React.FC<AdSlotProps> = ({ position, adsEnabled = true }) =
         }
         adRef.current?.appendChild(newScript);
       });
+
+      // If AdSense <ins> unit is present, trigger adsbygoogle push
+      if (rawScript.includes('adsbygoogle') || rawScript.includes('ca-pub-')) {
+        try {
+          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+        } catch (e) {
+          console.log('[AdSense] Push unit notice:', e);
+        }
+      }
     } else {
       adRef.current.innerHTML = rawScript;
     }
@@ -88,7 +105,7 @@ export const AdSlot: React.FC<AdSlotProps> = ({ position, adsEnabled = true }) =
           </div>
           <div className="flex items-center space-x-1 text-[10px] text-slate-400 font-medium">
             <Sparkles className="w-3 h-3 text-sky-400" />
-            <span>Adsterra Partner</span>
+            <span>Google AdSense & Adsterra</span>
           </div>
         </div>
 
