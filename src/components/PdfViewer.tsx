@@ -545,44 +545,53 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
       {/* AdSlot Inter-Page Banner Placement */}
       <AdSlot position="between-pages" adsEnabled={docInfo?.ads_enabled ?? true} />
 
-      {/* INCLUDED VIDEO TRAINING SECTION */}
-      <div className="mt-8 glass-card rounded-3xl p-6 sm:p-8 border border-sky-400/20 shadow-2xl">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-2.5 rounded-2xl bg-sky-400/10 border border-sky-400/20 text-sky-400">
-            <Play className="w-5 h-5 fill-sky-400" />
+      {/* ASSOCIATED TRAINING VIDEO SECTION (IF ATTACHED) */}
+      {docInfo?.video_url && docInfo.video_url.trim().length > 0 && (
+        <div className="mt-8 glass-card rounded-3xl p-6 sm:p-8 border border-sky-400/20 shadow-2xl">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="p-2.5 rounded-2xl bg-sky-400/10 border border-sky-400/20 text-sky-400">
+              <Play className="w-5 h-5 fill-sky-400" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold tracking-widest text-sky-400 uppercase font-mono">
+                Support Vidéo Associé
+              </span>
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                Vidéo de Formation
+              </h2>
+            </div>
           </div>
-          <div>
-            <span className="text-[10px] font-bold tracking-widest text-sky-400 uppercase font-mono">
-              Vidéo de Formation Intégrée
-            </span>
-            <h2 className="text-base sm:text-lg font-bold text-white">
-              Tutoriel & Explication Vidéo du Cours
-            </h2>
-          </div>
-        </div>
 
-        <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-          Suivez la vidéo explicative associée à ce module de formation pour accompagner votre lecture du support PDF.
-        </p>
-
-        {/* Video Player Frame */}
-        <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl">
-          {videoEmbed ? (
-            <iframe
-              src={videoEmbed}
-              title="PAWAKO Formation Video"
-              className="w-full h-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+          {docInfo.video_url.startsWith('/uploads/') || /\.(mp4|webm|mov|mkv|avi)$/i.test(docInfo.video_url) ? (
+            <div className="relative w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl">
+              <video
+                controls
+                controlsList="nodownload"
+                src={docInfo.video_url}
+                className="w-full aspect-video rounded-2xl object-contain bg-slate-950"
+              >
+                Votre navigateur ne supporte pas la lecture vidéo directe.
+              </video>
+            </div>
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-slate-500">
-              <Play className="w-12 h-12 text-slate-700 mb-2" />
-              <p className="text-xs">Aucune URL vidéo spécifiée pour ce document de formation.</p>
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl">
+              <iframe
+                src={
+                  docInfo.video_url.includes('youtube.com/watch?v=')
+                    ? `https://www.youtube.com/embed/${docInfo.video_url.split('watch?v=')[1]?.split('&')[0]}`
+                    : docInfo.video_url.includes('youtu.be/')
+                    ? `https://www.youtube.com/embed/${docInfo.video_url.split('youtu.be/')[1]?.split('?')[0]}`
+                    : docInfo.video_url
+                }
+                title="Vidéo de Formation PAWAKO"
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
             </div>
           )}
         </div>
-      </div>
+      )}
 
       {/* Bottom AdSlot Placement */}
       <AdSlot position="bottom" adsEnabled={docInfo?.ads_enabled ?? true} />

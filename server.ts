@@ -24,7 +24,7 @@ import { DocumentPublicInfo } from './src/types.js';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 const PORT = 3000;
 
-// Configure Multer for PDF file uploads
+// Configure Multer for PDF and Video file uploads
 const uploadsDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -35,20 +35,23 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.pdf';
-    const safeName = `doc-${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
+    const ext = path.extname(file.originalname) || (file.mimetype.startsWith('video/') ? '.mp4' : '.pdf');
+    const prefix = file.mimetype.startsWith('video/') ? 'video' : 'doc';
+    const safeName = `${prefix}-${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
     cb(null, safeName);
   }
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB PDF limit
+  limits: { fileSize: 200 * 1024 * 1024 }, // 200MB limit for video & pdf
   fileFilter: (_req, file, cb) => {
-    if (file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf')) {
+    const isPdf = file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf');
+    const isVideo = file.mimetype.startsWith('video/') || /\.(mp4|webm|mov|avi|mkv|m4v)$/i.test(file.originalname);
+    if (isPdf || isVideo) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF files are allowed!'));
+      cb(new Error('Format non supporté. Veuillez sélectionner un fichier PDF ou Vidéo (MP4, WebM, MOV, etc.).'));
     }
   }
 });
@@ -58,6 +61,7 @@ async function startServer() {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use('/uploads', express.static(uploadsDir));
 
   // API Admin Auth - Strictly single authorized email mathieumath93@gmail.com
   app.post('/api/admin/login', (req: Request, res: Response) => {
@@ -107,10 +111,13 @@ async function startServer() {
     res.json(docs);
   });
 
-  // POST New Document (Upload PDF)
-  app.post('/api/docs', upload.single('pdf_file'), (req: Request, res: Response) => {
+  // POST New Document (Upload PDF & Optional Video File)
+  app.post('/api/docs', upload.fields([{ name: 'pdf_file', maxCount: 1 }, { name: 'video_file', maxCount: 1 }]), (req: Request, res: Response) => {
     try {
-      const file = req.file;
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+      const pdfFile = files?.['pdf_file']?.[0];
+      const videoFile = files?.['video_file']?.[0];
+
       const { title, description, password, custom_slug, ads_enabled, video_url } = req.body;
 
       if (!title || !password) {
@@ -121,10 +128,10 @@ async function startServer() {
       let fileSize = 0;
       let originalFilename = '';
 
-      if (file) {
-        filePath = file.path;
-        fileSize = file.size;
-        originalFilename = file.originalname;
+      if (pdfFile) {
+        filePath = pdfFile.path;
+        fileSize = pdfFile.size;
+        originalFilename = pdfFile.originalname;
       } else {
         // Fallback sample PDF if created without file attachment
         const fallbackPath = path.join(uploadsDir, `doc-generated-${Date.now()}.pdf`);
@@ -132,6 +139,12 @@ async function startServer() {
         filePath = fallbackPath;
         fileSize = fs.statSync(fallbackPath).size;
         originalFilename = `${title.replace(/\s+/g, '_')}.pdf`;
+      }
+
+      // Determine final video URL (uploaded video file path or external video URL string)
+      let finalVideoUrl = video_url || '';
+      if (videoFile) {
+        finalVideoUrl = `/uploads/${videoFile.filename}`;
       }
 
       // Generate clean slug
@@ -158,7 +171,7 @@ async function startServer() {
         ads_enabled: ads_enabled === 'true' || ads_enabled === true,
         file_size: fileSize,
         original_filename: originalFilename,
-        video_url: video_url || ''
+        video_url: finalVideoUrl
       });
 
       res.status(201).json({ success: true, document: created });
@@ -168,16 +181,31 @@ async function startServer() {
     }
   });
 
-  // PATCH Update Document
-  app.patch('/api/docs/:id', (req: Request, res: Response) => {
+  // PATCH Update Document (Update PDF, Video, or Metadata)
+  app.patch('/api/docs/:id', upload.fields([{ name: 'pdf_file', maxCount: 1 }, { name: 'video_file', maxCount: 1 }]), (req: Request, res: Response) => {
     const { id } = req.params;
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+    const pdfFile = files?.['pdf_file']?.[0];
+    const videoFile = files?.['video_file']?.[0];
+
     const { title, description, password, ads_enabled, video_url } = req.body;
 
     const updates: any = {};
     if (title !== undefined) updates.title = title;
     if (description !== undefined) updates.description = description;
-    if (ads_enabled !== undefined) updates.ads_enabled = ads_enabled;
+    if (ads_enabled !== undefined) updates.ads_enabled = ads_enabled === 'true' || ads_enabled === true;
     if (video_url !== undefined) updates.video_url = video_url;
+
+    if (videoFile) {
+      updates.video_url = `/uploads/${videoFile.filename}`;
+    }
+
+    if (pdfFile) {
+      updates.pdf_file_path = pdfFile.path;
+      updates.file_size = pdfFile.size;
+      updates.original_filename = pdfFile.originalname;
+    }
+
     if (password) {
       updates.password_hash = bcrypt.hashSync(password, 10);
       updates.password_plain = password;

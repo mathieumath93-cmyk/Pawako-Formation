@@ -18,7 +18,8 @@ import {
   Code,
   Sparkles,
   AlertCircle,
-  Key
+  Key,
+  Video
 } from 'lucide-react';
 import { DocumentItem, AdSettings } from '../types';
 
@@ -46,6 +47,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   const [uploadCustomSlug, setUploadCustomSlug] = useState('');
   const [uploadAdsEnabled, setUploadAdsEnabled] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccessMsg, setUploadSuccessMsg] = useState('');
   const [uploadErrorMsg, setUploadErrorMsg] = useState('');
@@ -190,6 +192,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     if (selectedFile) {
       formData.append('pdf_file', selectedFile);
     }
+    if (selectedVideoFile) {
+      formData.append('video_file', selectedVideoFile);
+    }
     formData.append('title', uploadTitle);
     formData.append('description', uploadDescription);
     formData.append('video_url', uploadVideoUrl);
@@ -212,6 +217,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         setUploadPassword('');
         setUploadCustomSlug('');
         setSelectedFile(null);
+        setSelectedVideoFile(null);
         fetchDocuments();
         setActiveTab('docs');
       } else {
@@ -717,26 +723,57 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                 placeholder="Aperçu rapide affiché sur la page de mot de passe..."
                 value={uploadDescription}
                 onChange={(e) => setUploadDescription(e.target.value)}
-                rows={3}
+                rows={2}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400"
               />
             </div>
 
-            {/* Video URL Section */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                URL de la Vidéo de Formation (YouTube / Vimeo / MP4)
-              </label>
-              <input
-                type="url"
-                placeholder="https://www.youtube.com/watch?v=..."
-                value={uploadVideoUrl}
-                onChange={(e) => setUploadVideoUrl(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 font-mono"
-              />
-              <span className="text-[10px] text-slate-500 mt-1 block">
-                Vidéo explicative intégrée directement sous le lecteur Flipping Book.
-              </span>
+            {/* Video Upload or Link Section */}
+            <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-3">
+              <div className="flex items-center space-x-2 text-sky-400">
+                <Video className="w-4 h-4" />
+                <label className="text-xs font-semibold text-slate-200">
+                  Vidéo de Formation Associée (Optionnelle)
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Upload File Input */}
+                <div className="border border-dashed border-slate-800 hover:border-sky-500/50 rounded-xl p-3 text-center bg-slate-900/60 transition">
+                  <input
+                    type="file"
+                    accept="video/*,.mp4,.webm,.mov,.avi,.mkv"
+                    onChange={(e) => setSelectedVideoFile(e.target.files?.[0] || null)}
+                    className="hidden"
+                    id="video-file-input"
+                  />
+                  <label htmlFor="video-file-input" className="cursor-pointer block">
+                    <Upload className="w-5 h-5 text-sky-400 mx-auto mb-1" />
+                    <span className="text-[11px] font-medium text-slate-200 block truncate">
+                      {selectedVideoFile ? selectedVideoFile.name : 'Uploader un fichier vidéo'}
+                    </span>
+                    <span className="text-[9px] text-slate-500 block mt-0.5">
+                      {selectedVideoFile
+                        ? `${(selectedVideoFile.size / 1024 / 1024).toFixed(1)} MB`
+                        : 'Fichier MP4, WebM, MOV (Max 200MB)'}
+                    </span>
+                  </label>
+                </div>
+
+                {/* Video URL Input */}
+                <div>
+                  <label className="block text-[10px] text-slate-400 mb-1">
+                    Ou coller une URL Vidéo (YouTube / MP4 externe)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={uploadVideoUrl}
+                    onChange={(e) => setUploadVideoUrl(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 font-mono"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Custom Password & Slug Grid */}
