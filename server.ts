@@ -17,7 +17,13 @@ import {
   saveAdSettings,
   getAdminPassword,
   saveAdminPassword,
-  activeTokens
+  activeTokens,
+  getAllMedia,
+  getMediaById,
+  addMedia,
+  updateMedia,
+  deleteMedia,
+  incrementMediaViews
 } from './server/storage.js';
 import { DocumentPublicInfo } from './src/types.js';
 
@@ -354,6 +360,87 @@ importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');`);
     saveAdSettings(newSettings);
     res.json({ success: true, settings: getAdSettings() });
   });
+
+  // Media / Streaming API Endpoints (Flemix)
+  app.get('/api/media', (_req: Request, res: Response) => {
+    const media = getAllMedia();
+    res.json(media);
+  });
+
+  app.get('/api/media/:id', (req: Request, res: Response) => {
+    const id = req.params.id;
+    const item = getMediaById(id);
+    if (!item) {
+      res.status(404).json({ error: 'Contenu introuvable' });
+      return;
+    }
+    incrementMediaViews(id);
+    res.json(item);
+  });
+
+  app.post('/api/admin/media', (req: Request, res: Response) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader ? authHeader.replace('Bearer ', '') : '';
+    if (token !== getAdminPassword()) {
+      res.status(401).json({ error: 'Accès administrateur refusé' });
+      return;
+    }
+
+    const { title, type, description, genre, release_year, rating, quality_badge, poster_url, banner_url, stream_url, seasons, featured } = req.body;
+    if (!title || !type) {
+      res.status(400).json({ error: 'Le titre et le type (film ou série) sont requis' });
+      return;
+    }
+
+    const created = addMedia({
+      title,
+      type: type || 'movie',
+      description: description || '',
+      genre: genre || 'Général',
+      release_year: release_year || new Date().getFullYear(),
+      rating: rating || '4.5/5',
+      quality_badge: quality_badge || 'HD',
+      poster_url: poster_url || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600&auto=format&fit=crop',
+      banner_url: banner_url || '',
+      stream_url: stream_url || '',
+      seasons: seasons || [],
+      featured: Boolean(featured)
+    });
+
+    res.json({ success: true, media: created });
+  });
+
+  app.put('/api/admin/media/:id', (req: Request, res: Response) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader ? authHeader.replace('Bearer ', '') : '';
+    if (token !== getAdminPassword()) {
+      res.status(401).json({ error: 'Accès administrateur refusé' });
+      return;
+    }
+
+    const id = req.params.id;
+    const updated = updateMedia(id, req.body);
+    if (!updated) {
+      res.status(404).json({ error: 'Contenu introuvable' });
+      return;
+    }
+
+    res.json({ success: true, media: updated });
+  });
+
+  app.delete('/api/admin/media/:id', (req: Request, res: Response) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader ? authHeader.replace('Bearer ', '') : '';
+    if (token !== getAdminPassword()) {
+      res.status(401).json({ error: 'Accès administrateur refusé' });
+      return;
+    }
+
+    const id = req.params.id;
+    const success = deleteMedia(id);
+    res.json({ success });
+  });
+
 
   // Vite development middleware or static production serving
   if (process.env.NODE_ENV !== 'production') {

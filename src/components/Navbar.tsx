@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Lock, FileText, Settings, Key, ExternalLink, Search } from 'lucide-react';
+import { Shield, Lock, FileText, Settings, Key, ExternalLink, Search, Film, Tv, Sparkles } from 'lucide-react';
 
 interface NavbarProps {
   currentRoute: string;
@@ -32,15 +32,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute, navigate }) => {
               onClick={() => { if (!isDocView) navigate('/'); }}
               className={`flex items-center space-x-3 ${!isDocView ? 'cursor-pointer group' : ''}`}
             >
-              <div className="w-9 h-9 rounded-xl bg-sky-400 text-slate-950 font-black text-lg flex items-center justify-center shadow-lg shadow-sky-400/20 group-hover:scale-105 transition-transform duration-200">
-                P
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-red-600 to-red-500 text-white font-black text-xl flex items-center justify-center shadow-lg shadow-red-600/30 group-hover:scale-105 transition-transform duration-200">
+                F
               </div>
               <div>
-                <span className="text-lg font-extrabold text-white tracking-tight uppercase">
-                  PAWAKO <span className="text-sky-400">FORMATION</span>
+                <span className="text-lg font-black text-white tracking-tight uppercase">
+                  FLEMIX <span className="text-sky-400">& DOCS</span>
                 </span>
-                <span className="ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-400/10 text-sky-400 border border-sky-400/20 uppercase tracking-wider">
-                  FlipBook DRM
+                <span className="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 uppercase tracking-wider">
+                  Streaming & DRM
                 </span>
               </div>
             </div>
@@ -51,7 +51,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute, navigate }) => {
                 <form onSubmit={handleSearchSubmit} className="relative w-full">
                   <input
                     type="text"
-                    placeholder="Accéder à un cours avec un code ou slug..."
+                    placeholder="Accéder à un cours PDF avec un code..."
                     value={quickSlug}
                     onChange={(e) => setQuickSlug(e.target.value)}
                     className="w-full bg-slate-900/90 border border-slate-800 rounded-xl pl-10 pr-24 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition"
@@ -68,27 +68,39 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute, navigate }) => {
             )}
 
             {/* Nav Actions */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               {!isDocView && (
                 <>
                   <button
                     onClick={() => setShowSearchModal(true)}
                     className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-900 transition"
-                    title="Enter access code"
+                    title="Code d'accès PDF"
                   >
                     <Search className="w-5 h-5" />
                   </button>
 
                   <button
                     onClick={() => navigate('/')}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center space-x-1.5 ${
-                      currentRoute === '/'
-                        ? 'bg-slate-800 text-white border border-slate-700'
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5 ${
+                      currentRoute === '/' || currentRoute === '/streaming'
+                        ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/30'
                         : 'text-slate-400 hover:text-white hover:bg-slate-900'
                     }`}
                   >
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>Accueil</span>
+                    <Film className="w-3.5 h-3.5 text-red-300" />
+                    <span>Streaming</span>
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/docs')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5 ${
+                      currentRoute === '/docs'
+                        ? 'bg-slate-800 text-white border border-slate-700 font-bold'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5 text-sky-400" />
+                    <span>Cours PDF</span>
                   </button>
 
                   <button
@@ -100,7 +112,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute, navigate }) => {
                     }`}
                   >
                     <Lock className="w-3.5 h-3.5 text-sky-400 group-hover:text-slate-950" />
-                    <span>Espace Admin</span>
+                    <span className="hidden sm:inline">Admin</span>
                   </button>
                 </>
               )}
@@ -116,8 +128,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute, navigate }) => {
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Key className="w-4 h-4 text-indigo-400" />
-                Access Private Document
+                <Key className="w-4 h-4 text-sky-400" />
+                Accès Document Privé
               </h3>
               <button
                 onClick={() => setShowSearchModal(false)}
@@ -128,14 +140,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute, navigate }) => {
             </div>
             <form onSubmit={handleSearchSubmit}>
               <p className="text-xs text-slate-400 mb-3">
-                Enter the unique URL slug or access code provided by the document owner.
+                Saisissez le slug ou code d'accès de la formation ou du document PDF.
               </p>
               <input
                 type="text"
-                placeholder="e.g. q3-financials-2026"
+                placeholder="ex: formation-vente-management"
                 value={quickSlug}
                 onChange={(e) => setQuickSlug(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 mb-4"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-sky-400 mb-4"
                 autoFocus
               />
               <div className="flex justify-end gap-2">
@@ -144,13 +156,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute, navigate }) => {
                   onClick={() => setShowSearchModal(false)}
                   className="px-4 py-2 text-xs text-slate-400 hover:text-white"
                 >
-                  Cancel
+                  Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition shadow-lg shadow-indigo-600/30"
+                  className="px-4 py-2 bg-sky-400 text-slate-950 text-xs font-bold rounded-xl transition shadow-lg shadow-sky-400/30"
                 >
-                  Open Document
+                  Ouvrir le Cours
                 </button>
               </div>
             </form>
@@ -160,3 +172,4 @@ export const Navbar: React.FC<NavbarProps> = ({ currentRoute, navigate }) => {
     </>
   );
 };
+

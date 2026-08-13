@@ -272,11 +272,12 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           </div>
           <div>
             <h1 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-              <span>{docInfo?.title || 'PAWAKO Formation - Support de Cours'}</span>
+              <span>{docInfo?.title || 'FLEMIX & DOCS - Support de Cours'}</span>
               <span className="text-[10px] font-mono font-normal px-2 py-0.5 rounded bg-sky-400/10 text-sky-400 border border-sky-400/20 uppercase tracking-wider">
                 FLIPPING BOOK ACTIVE
               </span>
             </h1>
+
             <p className="text-xs text-slate-400">
               Mode livre feuilletable sécurisé. Liens publics, impression et téléchargement verrouillés.
             </p>
@@ -600,12 +601,13 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
       <div className="mt-8 p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-center text-xs text-slate-500 space-y-1">
         <p className="font-semibold text-slate-400 flex items-center justify-center gap-1">
           <Shield className="w-3.5 h-3.5 text-sky-400" />
-          PAWAKO FORMATION • Plateforme Sécurisée & Monétisée
+          FLEMIX & DOCS • Plateforme Sécurisée & Monétisée
         </p>
         <p>
-          Ce support est diffusé via un lecteur Flipbook interactif à jeton d'accès temporaire. Impression et exportation directes désactivées.
+          Ce support est diffusé via un lecteur Flipbook interactif à jeton d'accès temporaire.
         </p>
       </div>
+
     </div>
   );
 };

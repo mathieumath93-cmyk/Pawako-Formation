@@ -43,3 +43,38 @@ export interface AdSettings {
   adsterraSocialBarScript: string;
   globalAdsEnabled: boolean;
 }
+
+export type MediaType = 'movie' | 'series';
+
+export interface Episode {
+  id: string;
+  episode_number: number;
+  season_number: number;
+  title: string;
+  stream_url: string;
+}
+
+export interface Season {
+  season_number: number;
+  title?: string;
+  episodes: Episode[];
+}
+
+export interface MediaItem {
+  id: string;
+  title: string;
+  type: MediaType;
+  description: string;
+  genre: string;
+  release_year: number | string;
+  rating?: string;
+  quality_badge?: string;
+  poster_url: string;
+  banner_url?: string;
+  stream_url?: string; // Main stream link for movies
+  seasons?: Season[]; // Seasons & episodes for series
+  created_at: string;
+  views_count: number;
+  featured?: boolean;
+}
+
