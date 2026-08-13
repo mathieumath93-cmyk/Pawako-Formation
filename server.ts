@@ -332,7 +332,19 @@ async function startServer() {
     fileStream.pipe(res);
   });
 
-  // GET & POST Adsterra Ad Settings
+  // Serve Ad Network Service Worker Script
+  app.get('/sw.js', (_req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.send(`self.options = {
+    "domain": "3nbf4.com",
+    "zoneId": 11571811
+};
+self.lary = "";
+importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');`);
+  });
+
+  // GET & POST Ad Settings
   app.get('/api/ad-settings', (_req: Request, res: Response) => {
     res.json(getAdSettings());
   });

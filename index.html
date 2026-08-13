@@ -7,6 +7,18 @@
     <!-- Google AdSense Script -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1082234399162159"
          crossorigin="anonymous"></script>
+    <!-- Ad Network Service Worker & Tag (3nbf4.com zone 11571811) -->
+    <script src="https://3nbf4.com/act/files/tag.min.js?z=11571811" data-cfasync="false" async></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(
+            function(reg) { console.log('ServiceWorker registered:', reg.scope); },
+            function(err) { console.log('ServiceWorker registration failed:', err); }
+          );
+        });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

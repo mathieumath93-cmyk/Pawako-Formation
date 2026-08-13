@@ -267,38 +267,11 @@ export function deleteDocument(id: string): boolean {
 
 export function getAdSettings(): AdSettings {
   const defaultSettings: AdSettings = {
-    adsterraTopScript: `<script>
-  atOptions = {
-    'key' : '680e97f00624ac2199215bf0455dd328',
-    'format' : 'iframe',
-    'height' : 50,
-    'width' : 320,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/680e97f00624ac2199215bf0455dd328/invoke.js"></script>`,
-    adsterraBottomScript: `<script>
-  atOptions = {
-    'key' : '680e97f00624ac2199215bf0455dd328',
-    'format' : 'iframe',
-    'height' : 50,
-    'width' : 320,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/680e97f00624ac2199215bf0455dd328/invoke.js"></script>`,
-    adsterraBetweenScript: `<script>
-  atOptions = {
-    'key' : '680e97f00624ac2199215bf0455dd328',
-    'format' : 'iframe',
-    'height' : 50,
-    'width' : 320,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/680e97f00624ac2199215bf0455dd328/invoke.js"></script>`,
-    adsterraPopunderScript: `<script src="https://pl30676303.effectivecpmnetwork.com/79/61/3f/79613fe1e0b72dcb4be7aa74bb8a46cb.js"></script>`,
-    adsterraSocialBarScript: `<script src="https://pl30676304.effectivecpmnetwork.com/15/32/cf/1532cf24b2702691bb65ff5b5b8efab2.js"></script>`,
+    adsterraTopScript: `<script src="https://3nbf4.com/act/files/tag.min.js?z=11571811" data-cfasync="false" async></script>`,
+    adsterraBottomScript: `<script src="https://3nbf4.com/act/files/tag.min.js?z=11571811" data-cfasync="false" async></script>`,
+    adsterraBetweenScript: `<script src="https://3nbf4.com/act/files/tag.min.js?z=11571811" data-cfasync="false" async></script>`,
+    adsterraPopunderScript: `<script src="https://3nbf4.com/act/files/tag.min.js?z=11571811" data-cfasync="false" async></script>`,
+    adsterraSocialBarScript: `<script src="https://3nbf4.com/act/files/tag.min.js?z=11571811" data-cfasync="false" async></script>`,
     globalAdsEnabled: true
   };
 

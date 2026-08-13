@@ -839,26 +839,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         </div>
       )}
 
-      {/* TAB 3: ADSTERRA & GOOGLE ADSENSE SETTINGS */}
+      {/* TAB 3: ADS & MONETIZATION SETTINGS */}
       {activeTab === 'adsterra' && (
         <div className="max-w-3xl mx-auto bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
           <div className="mb-6">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-sky-400" />
-              Configuration Monétisation (Google AdSense & Adsterra)
+              Configuration Monétisation (Google AdSense & 3nbf4.com Service Worker)
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Google AdSense est actif globalement (<code>ca-pub-1082234399162159</code>) dans le <code>&lt;head&gt;</code> de l'application. Vous pouvez également coller vos blocs d'annonces personnalisés Google AdSense ou vos scripts Adsterra ci-dessous.
+              Google AdSense et le Service Worker <code>3nbf4.com</code> (Zone 11571811) sont actifs globalement dans le <code>&lt;head&gt;</code> et dans le Service Worker <code>/sw.js</code>. Vous pouvez également personnaliser vos blocs d'annonces ci-dessous.
             </p>
           </div>
 
           <div className="mb-6 p-4 bg-sky-400/10 border border-sky-400/20 rounded-xl text-xs text-sky-200 flex flex-col gap-2">
             <div className="flex items-center gap-2 font-bold text-sky-400">
               <ShieldCheck className="w-5 h-5 shrink-0" />
-              <span>Google AdSense Intégré & Isolations des Annoceurs</span>
+              <span>Réseau Publicitaire & Service Worker Intégré</span>
             </div>
             <p className="text-[11px] text-slate-300">
-              Le script principal Google AdSense est inséré dans les balises <code>&lt;head&gt;</code> de toutes les pages. Les blocs d'annonces ci-dessous sont diffusés sur la liseuse de documents et cours PDF. Toutes les annonces sont désactivées au sein du panneau d'administration.
+              Le Service Worker <code>/sw.js</code> configuré avec votre domaine <code>3nbf4.com</code> (Zone 11571811) est automatiquement enregistré. Toutes les annonces sont isolées des interfaces d'administration.
             </p>
           </div>
 
