@@ -221,14 +221,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     try {
       const res = await fetch(`/api/admin/media/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${adminToken}` }
+        headers: { 
+          'Authorization': `Bearer ${adminToken}`,
+          'Content-Type': 'application/json'
+        }
       });
       const data = await res.json();
       if (data.success) {
         setMediaList((prev) => prev.filter((m) => m.id !== id));
+        setMediaMsg({ type: 'success', text: `"${title}" a été supprimé du catalogue avec succès.` });
+      } else {
+        alert(data.error || 'Erreur lors de la suppression.');
       }
     } catch (err) {
       console.error('Erreur suppression média:', err);
+      alert('Erreur réseau lors de la suppression.');
     }
   };
 
