@@ -110,14 +110,9 @@ export default function App() {
 
       {/* Main View Router */}
       <main>
-        {/* Route: Home / Streaming Catalog (Flemix) */}
-        {(currentRoute === '/' || currentRoute === '/streaming') && !docSlug && (
+        {/* Default Route: Streaming Catalog (Flemix) */}
+        {!docSlug && !currentRoute.startsWith('/admin') && (
           <StreamingHub navigate={navigate} initialMediaId={initialMediaId} />
-        )}
-
-        {/* Route: Documents / Cours PDF (/docs) */}
-        {currentRoute === '/docs' && !docSlug && (
-          <HomePage navigate={navigate} />
         )}
 
         {/* Route: Admin /admin */}
@@ -140,13 +135,13 @@ export default function App() {
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md shadow-2xl">
                   <h2 className="text-lg font-bold text-white mb-2">404 - Document Introuvable</h2>
                   <p className="text-xs text-slate-400 mb-6">
-                    Le slug de cours <code className="text-sky-400 font-mono">"{docSlug}"</code> n'existe pas ou a été supprimé par l'administrateur.
+                    Le lien de cours <code className="text-sky-400 font-mono">"{docSlug}"</code> n'existe pas ou n'est plus disponible.
                   </p>
                   <button
-                    onClick={() => navigate('/docs')}
-                    className="px-5 py-2.5 bg-sky-400 text-slate-950 text-xs font-bold rounded-xl transition shadow-lg shadow-sky-400/20"
+                    onClick={() => navigate('/')}
+                    className="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl transition shadow-lg shadow-red-600/30"
                   >
-                    Voir tous les cours PDF
+                    Aller au Streaming Flemix
                   </button>
                 </div>
               </div>
@@ -166,6 +161,7 @@ export default function App() {
                     token={docToken}
                     docInfo={docInfo}
                     onLockSession={handleLockSession}
+                    navigate={navigate}
                   />
                 )}
               </>
@@ -173,6 +169,17 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* Discreet Footer with Admin Link */}
+      <footer className="border-t border-slate-900 py-6 text-center text-[11px] text-slate-600">
+        <p>© Flemix Streaming • Plateforme Haute Définition</p>
+        <button
+          onClick={() => navigate('/admin')}
+          className="mt-2 text-[10px] text-slate-700 hover:text-slate-500 underline transition"
+        >
+          Espace Administration
+        </button>
+      </footer>
 
       {/* Global Ad Slots (Popunder & Floating Social Bar) */}
       <AdSlot position="popunder" />

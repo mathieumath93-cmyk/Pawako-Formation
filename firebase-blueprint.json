@@ -1,0 +1,36 @@
+{
+  "entities": {
+    "media": {
+      "title": "Media Items",
+      "description": "Catalog of movies and TV series for Flemix",
+      "properties": {
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "genre": { "type": "string" },
+        "release_year": { "type": "number" },
+        "rating": { "type": "string" },
+        "quality_badge": { "type": "string" },
+        "poster_url": { "type": "string" },
+        "banner_url": { "type": "string" },
+        "stream_url": { "type": "string" },
+        "created_at": { "type": "string" },
+        "views_count": { "type": "number" },
+        "featured": { "type": "boolean" }
+      },
+      "required": ["title", "type"]
+    },
+    "documents": {
+      "title": "Document Items",
+      "description": "Catalog of protected PDF courses",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "slug": { "type": "string" },
+        "accessCode": { "type": "string" },
+        "views": { "type": "number" }
+      },
+      "required": ["title", "slug"]
+    }
+  }
+}

@@ -3,6 +3,14 @@ import path from 'path';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { DocumentItem, DocumentPublicInfo, AdSettings, MediaItem } from '../src/types';
+import {
+  syncMediaFromFirestore,
+  saveMediaToFirestore,
+  deleteMediaFromFirestore,
+  syncDocumentsFromFirestore,
+  saveDocumentToFirestore,
+  deleteDocumentFromFirestore
+} from './firebaseDb';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
@@ -218,6 +226,7 @@ export function incrementDocViews(slug: string): void {
   if (doc) {
     doc.views_count = (doc.views_count || 0) + 1;
     saveAllDocuments(docs);
+    saveDocumentToFirestore(doc);
   }
 }
 
@@ -235,6 +244,7 @@ export function addDocument(newDoc: Omit<DocumentItem, 'id' | 'created_at' | 'vi
 
   docs.unshift(createdDoc);
   saveAllDocuments(docs);
+  saveDocumentToFirestore(createdDoc);
   return createdDoc;
 }
 
@@ -245,6 +255,7 @@ export function updateDocument(id: string, updates: Partial<DocumentItem>): Docu
 
   docs[index] = { ...docs[index], ...updates };
   saveAllDocuments(docs);
+  saveDocumentToFirestore(docs[index]);
   return docs[index];
 }
 
@@ -264,6 +275,7 @@ export function deleteDocument(id: string): boolean {
 
   docs = docs.filter(d => d.id !== id);
   saveAllDocuments(docs);
+  deleteDocumentFromFirestore(id);
   return true;
 }
 
@@ -418,6 +430,7 @@ export function incrementMediaViews(id: string): void {
   if (item) {
     item.views_count = (item.views_count || 0) + 1;
     saveAllMedia(media);
+    saveMediaToFirestore(item);
   }
 }
 
@@ -435,6 +448,7 @@ export function addMedia(newMedia: Omit<MediaItem, 'id' | 'created_at' | 'views_
 
   media.unshift(item);
   saveAllMedia(media);
+  saveMediaToFirestore(item);
   return item;
 }
 
@@ -445,6 +459,7 @@ export function updateMedia(id: string, updates: Partial<MediaItem>): MediaItem 
 
   media[index] = { ...media[index], ...updates };
   saveAllMedia(media);
+  saveMediaToFirestore(media[index]);
   return media[index];
 }
 
@@ -455,6 +470,7 @@ export function deleteMedia(id: string): boolean {
 
   media = media.filter(m => m.id !== id);
   saveAllMedia(media);
+  deleteMediaFromFirestore(id);
   return true;
 }
 
