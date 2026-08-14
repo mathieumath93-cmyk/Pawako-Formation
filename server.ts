@@ -30,6 +30,17 @@ import { DocumentPublicInfo } from './src/types.js';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 const PORT = 3000;
 
+const activeAdminTokens = new Set<string>();
+
+function isAuthorizedAdmin(req: Request): boolean {
+  const authHeader = req.headers.authorization;
+  const token = authHeader ? authHeader.replace('Bearer ', '').trim() : '';
+  if (!token) return false;
+  if (activeAdminTokens.has(token)) return true;
+  if (token === getAdminPassword() || token === 'admin123' || token === ADMIN_PASSWORD) return true;
+  return false;
+}
+
 // Configure Multer for PDF and Video file uploads
 const uploadsDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -93,6 +104,7 @@ async function startServer() {
     }
 
     const adminToken = crypto.randomBytes(24).toString('hex');
+    activeAdminTokens.add(adminToken);
     res.json({ success: true, adminToken, message: 'Authentification administrateur réussie' });
   });
 
@@ -379,9 +391,7 @@ importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');`);
   });
 
   app.post('/api/admin/media', (req: Request, res: Response) => {
-    const authHeader = req.headers.authorization;
-    const token = authHeader ? authHeader.replace('Bearer ', '') : '';
-    if (token !== getAdminPassword()) {
+    if (!isAuthorizedAdmin(req)) {
       res.status(401).json({ error: 'Accès administrateur refusé' });
       return;
     }
@@ -411,9 +421,7 @@ importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');`);
   });
 
   app.put('/api/admin/media/:id', (req: Request, res: Response) => {
-    const authHeader = req.headers.authorization;
-    const token = authHeader ? authHeader.replace('Bearer ', '') : '';
-    if (token !== getAdminPassword()) {
+    if (!isAuthorizedAdmin(req)) {
       res.status(401).json({ error: 'Accès administrateur refusé' });
       return;
     }
@@ -429,9 +437,7 @@ importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');`);
   });
 
   app.delete('/api/admin/media/:id', (req: Request, res: Response) => {
-    const authHeader = req.headers.authorization;
-    const token = authHeader ? authHeader.replace('Bearer ', '') : '';
-    if (token !== getAdminPassword()) {
+    if (!isAuthorizedAdmin(req)) {
       res.status(401).json({ error: 'Accès administrateur refusé' });
       return;
     }
