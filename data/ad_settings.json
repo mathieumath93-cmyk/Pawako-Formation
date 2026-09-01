@@ -1,8 +1,8 @@
 {
-  "adsterraTopScript": "<script src=\"https://3nbf4.com/act/files/tag.min.js?z=11571811\" data-cfasync=\"false\" async></script>",
-  "adsterraBottomScript": "<script src=\"https://3nbf4.com/act/files/tag.min.js?z=11571811\" data-cfasync=\"false\" async></script>",
-  "adsterraBetweenScript": "<script src=\"https://3nbf4.com/act/files/tag.min.js?z=11571811\" data-cfasync=\"false\" async></script>",
-  "adsterraPopunderScript": "<script src=\"https://3nbf4.com/act/files/tag.min.js?z=11571811\" data-cfasync=\"false\" async></script>",
-  "adsterraSocialBarScript": "<script src=\"https://3nbf4.com/act/files/tag.min.js?z=11571811\" data-cfasync=\"false\" async></script>",
-  "globalAdsEnabled": true
+  "adsterraTopScript": "",
+  "adsterraBottomScript": "",
+  "adsterraBetweenScript": "",
+  "adsterraPopunderScript": "",
+  "adsterraSocialBarScript": "",
+  "globalAdsEnabled": false
 }

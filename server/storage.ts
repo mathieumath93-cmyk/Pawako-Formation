@@ -281,12 +281,12 @@ export function deleteDocument(id: string): boolean {
 
 export function getAdSettings(): AdSettings {
   const defaultSettings: AdSettings = {
-    adsterraTopScript: `<script src="https://3nbf4.com/act/files/tag.min.js?z=11571811" data-cfasync="false" async></script>`,
-    adsterraBottomScript: `<script src="https://3nbf4.com/act/files/tag.min.js?z=11571811" data-cfasync="false" async></script>`,
-    adsterraBetweenScript: `<script src="https://3nbf4.com/act/files/tag.min.js?z=11571811" data-cfasync="false" async></script>`,
-    adsterraPopunderScript: `<script src="https://3nbf4.com/act/files/tag.min.js?z=11571811" data-cfasync="false" async></script>`,
-    adsterraSocialBarScript: `<script src="https://3nbf4.com/act/files/tag.min.js?z=11571811" data-cfasync="false" async></script>`,
-    globalAdsEnabled: true
+    adsterraTopScript: "",
+    adsterraBottomScript: "",
+    adsterraBetweenScript: "",
+    adsterraPopunderScript: "",
+    adsterraSocialBarScript: "",
+    globalAdsEnabled: false
   };
 
   try {
@@ -295,7 +295,13 @@ export function getAdSettings(): AdSettings {
       return defaultSettings;
     }
     const data = fs.readFileSync(AD_SETTINGS_FILE, 'utf-8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    // Ensure ads stay globally disabled unless explicitly saved differently
+    return {
+      ...defaultSettings,
+      ...parsed,
+      globalAdsEnabled: parsed.globalAdsEnabled ?? false
+    };
   } catch (err) {
     return defaultSettings;
   }

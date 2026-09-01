@@ -20,17 +20,21 @@ export const AdSlot: React.FC<AdSlotProps> = ({ position, adsEnabled = true }) =
 
   const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
 
-  if (!adsEnabled || isAdminRoute || (settings && !settings.globalAdsEnabled)) {
+  if (!adsEnabled || isAdminRoute || !settings || !settings.globalAdsEnabled) {
     return null;
   }
 
   let rawScript = '';
   if (settings) {
-    if (position === 'top') rawScript = settings.adsterraTopScript;
-    else if (position === 'bottom') rawScript = settings.adsterraBottomScript;
-    else if (position === 'between-pages') rawScript = settings.adsterraBetweenScript;
-    else if (position === 'popunder') rawScript = settings.adsterraPopunderScript;
-    else if (position === 'social-bar') rawScript = settings.adsterraSocialBarScript;
+    if (position === 'top') rawScript = settings.adsterraTopScript || '';
+    else if (position === 'bottom') rawScript = settings.adsterraBottomScript || '';
+    else if (position === 'between-pages') rawScript = settings.adsterraBetweenScript || '';
+    else if (position === 'popunder') rawScript = settings.adsterraPopunderScript || '';
+    else if (position === 'social-bar') rawScript = settings.adsterraSocialBarScript || '';
+  }
+
+  if (!rawScript || rawScript.trim() === '') {
+    return null;
   }
 
   // Inject user scripts into container safely if custom HTML / script tags / AdSense tags provided
