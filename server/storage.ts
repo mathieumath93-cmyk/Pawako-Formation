@@ -2,23 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { DocumentItem, DocumentPublicInfo, AdSettings, MediaItem } from '../src/types';
-import {
-  syncMediaFromFirestore,
-  saveMediaToFirestore,
-  deleteMediaFromFirestore,
-  syncDocumentsFromFirestore,
-  saveDocumentToFirestore,
-  deleteDocumentFromFirestore
-} from './firebaseDb';
+import { DocumentItem, DocumentPublicInfo, AdSettings } from '../src/types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 const DOCS_FILE = path.join(DATA_DIR, 'documents.json');
-const MEDIA_FILE = path.join(DATA_DIR, 'media.json');
 const AD_SETTINGS_FILE = path.join(DATA_DIR, 'ad_settings.json');
 const ADMIN_CONFIG_FILE = path.join(DATA_DIR, 'admin_config.json');
-
 
 export function getAdminPassword(): string {
   try {
@@ -226,7 +216,6 @@ export function incrementDocViews(slug: string): void {
   if (doc) {
     doc.views_count = (doc.views_count || 0) + 1;
     saveAllDocuments(docs);
-    saveDocumentToFirestore(doc);
   }
 }
 
@@ -244,7 +233,6 @@ export function addDocument(newDoc: Omit<DocumentItem, 'id' | 'created_at' | 'vi
 
   docs.unshift(createdDoc);
   saveAllDocuments(docs);
-  saveDocumentToFirestore(createdDoc);
   return createdDoc;
 }
 
@@ -255,7 +243,6 @@ export function updateDocument(id: string, updates: Partial<DocumentItem>): Docu
 
   docs[index] = { ...docs[index], ...updates };
   saveAllDocuments(docs);
-  saveDocumentToFirestore(docs[index]);
   return docs[index];
 }
 
@@ -275,18 +262,42 @@ export function deleteDocument(id: string): boolean {
 
   docs = docs.filter(d => d.id !== id);
   saveAllDocuments(docs);
-  deleteDocumentFromFirestore(id);
   return true;
 }
 
 export function getAdSettings(): AdSettings {
   const defaultSettings: AdSettings = {
-    adsterraTopScript: "",
-    adsterraBottomScript: "",
-    adsterraBetweenScript: "",
-    adsterraPopunderScript: "",
-    adsterraSocialBarScript: "",
-    globalAdsEnabled: false
+    adsterraTopScript: `<!-- Adsterra Top Banner Slot (728x90) -->
+<div class="p-3 bg-slate-900/80 border border-sky-400/30 rounded-lg text-center my-2 shadow-sm">
+  <span class="text-[10px] tracking-widest text-sky-400 uppercase font-semibold block mb-1">Espace Bannière Adsterra - Haut</span>
+  <div class="text-xs text-slate-300 font-mono">Slot Adsterra 728x90 / Native Leaderboard</div>
+</div>`,
+    adsterraBottomScript: `<!-- Adsterra Bottom Banner Slot (300x250) -->
+<div class="p-3 bg-slate-900/80 border border-sky-400/30 rounded-lg text-center my-2 shadow-sm">
+  <span class="text-[10px] tracking-widest text-sky-400 uppercase font-semibold block mb-1">Espace Bannière Adsterra - Bas</span>
+  <div class="text-xs text-slate-300 font-mono">Slot Adsterra 300x250 / Rectangle Canvas</div>
+</div>`,
+    adsterraBetweenScript: `<!-- Adsterra Inter-Page Banner Slot -->
+<div class="p-3 bg-slate-900/90 border border-sky-400/30 rounded-lg text-center my-3 shadow-md">
+  <span class="text-[10px] tracking-widest text-sky-400 uppercase font-semibold block mb-1">Espace Bannière Adsterra - Entre Pages (Flipbook)</span>
+  <div class="text-xs text-slate-300 font-mono">Slot Adsterra 468x60 / Pause In-Reading</div>
+</div>`,
+    adsterraPopunderScript: `<!-- Adsterra Popunder Script (Exemple de code Adsterra Popunder) -->
+<script type="text/javascript">
+  console.log("[Adsterra Popunder] Script active sur PAWAKO FORMATION");
+</script>
+<div class="p-2 bg-amber-500/10 border border-amber-500/30 rounded text-amber-400 text-[10px] font-mono text-center">
+  ⚡ Popunder Adsterra pret (Declenchement automatique sur clic)
+</div>`,
+    adsterraSocialBarScript: `<!-- Adsterra Social Bar Script (Format flottant engageant) -->
+<div class="fixed bottom-4 right-4 z-50 p-3 bg-slate-900/95 border border-sky-400/40 rounded-xl shadow-2xl backdrop-blur-md max-w-xs flex items-center space-x-3">
+  <div class="w-3 h-3 rounded-full bg-emerald-400 animate-ping shrink-0" />
+  <div className="text-xs text-slate-200">
+    <strong class="text-sky-400 block font-sans">PAWAKO FORMATION Offer</strong>
+    <span class="text-[11px] text-slate-400">Publicite Social Bar Adsterra active</span>
+  </div>
+</div>`,
+    globalAdsEnabled: true
   };
 
   try {
@@ -295,13 +306,7 @@ export function getAdSettings(): AdSettings {
       return defaultSettings;
     }
     const data = fs.readFileSync(AD_SETTINGS_FILE, 'utf-8');
-    const parsed = JSON.parse(data);
-    // Ensure ads stay globally disabled unless explicitly saved differently
-    return {
-      ...defaultSettings,
-      ...parsed,
-      globalAdsEnabled: parsed.globalAdsEnabled ?? false
-    };
+    return JSON.parse(data);
   } catch (err) {
     return defaultSettings;
   }
@@ -314,169 +319,3 @@ export function saveAdSettings(settings: AdSettings): void {
     console.error("Failed saving ad settings:", err);
   }
 }
-
-// Media / Streaming Store
-function getInitialSeedMedia(): MediaItem[] {
-  return [
-    {
-      id: "media-seed-001",
-      title: "Avatar: La Voie de l'Eau",
-      type: "movie",
-      description: "Se déroulant plus d'une décennie après les événements du premier film, plongez dans les océans de Pandora avec la famille Sully.",
-      genre: "Science-Fiction",
-      release_year: 2023,
-      rating: "8.8/10",
-      quality_badge: "4K Ultra HD",
-      poster_url: "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=600&auto=format&fit=crop",
-      banner_url: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200&auto=format&fit=crop",
-      stream_url: "https://www.youtube.com/embed/d9MyW72ELq0",
-      created_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-      views_count: 1420,
-      featured: true
-    },
-    {
-      id: "media-seed-002",
-      title: "Cyberpunk Edgerunners",
-      type: "series",
-      description: "Un enfant des rues tentant de survivre dans une métropole du futur obsédée par la technologie et les modifications corporelles.",
-      genre: "Animation / SF",
-      release_year: 2024,
-      rating: "9.2/10",
-      quality_badge: "HD VOSTFR",
-      poster_url: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=600&auto=format&fit=crop",
-      banner_url: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1200&auto=format&fit=crop",
-      seasons: [
-        {
-          season_number: 1,
-          title: "Saison 1",
-          episodes: [
-            { id: "ep-1-1", season_number: 1, episode_number: 1, title: "Épisode 1: Code d'Accès", stream_url: "https://www.youtube.com/embed/L6P3nI6VnlY" },
-            { id: "ep-1-2", season_number: 1, episode_number: 2, title: "Épisode 2: Like a Boy", stream_url: "https://www.youtube.com/embed/3JZ_D3ELwOQ" },
-            { id: "ep-1-3", season_number: 1, episode_number: 3, title: "Épisode 3: Smooth Criminal", stream_url: "https://www.youtube.com/embed/d9MyW72ELq0" }
-          ]
-        }
-      ],
-      created_at: new Date(Date.now() - 86400000 * 4).toISOString(),
-      views_count: 980,
-      featured: true
-    },
-    {
-      id: "media-seed-003",
-      title: "Inception: Le Labyrinthe",
-      type: "movie",
-      description: "Un voleur expérimenté s'approprie les secrets précieux contenus dans le subconscient des gens pendant qu'ils rêvent.",
-      genre: "Thriller / SF",
-      release_year: 2022,
-      rating: "9.0/10",
-      quality_badge: "4K VF",
-      poster_url: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600&auto=format&fit=crop",
-      stream_url: "https://www.youtube.com/embed/YoHD9XEInc0",
-      created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-      views_count: 750,
-      featured: false
-    },
-    {
-      id: "media-seed-004",
-      title: "Stranger Chronicles",
-      type: "series",
-      description: "Quand un jeune garçon disparaît, une petite ville découvre un mystère impliquant des expériences secrètes et des forces surnaturelles.",
-      genre: "Horreur / Drame",
-      release_year: 2023,
-      rating: "8.7/10",
-      quality_badge: "HD VF",
-      poster_url: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=600&auto=format&fit=crop",
-      seasons: [
-        {
-          season_number: 1,
-          title: "Saison 1",
-          episodes: [
-            { id: "ep-2-1", season_number: 1, episode_number: 1, title: "Épisode 1: Le Signal Obscur", stream_url: "https://www.youtube.com/embed/b9EkMc79ZSU" },
-            { id: "ep-2-2", season_number: 1, episode_number: 2, title: "Épisode 2: L'Ombre du Passé", stream_url: "https://www.youtube.com/embed/dQw4w9WgXcQ" }
-          ]
-        }
-      ],
-      created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-      views_count: 610,
-      featured: false
-    }
-  ];
-}
-
-export function getAllMedia(): MediaItem[] {
-  try {
-    if (!fs.existsSync(MEDIA_FILE)) {
-      const seeds = getInitialSeedMedia();
-      fs.writeFileSync(MEDIA_FILE, JSON.stringify(seeds, null, 2));
-      return seeds;
-    }
-    const data = fs.readFileSync(MEDIA_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (e) {
-    console.error("Error reading media store:", e);
-    return getInitialSeedMedia();
-  }
-}
-
-export function saveAllMedia(media: MediaItem[]): void {
-  try {
-    fs.writeFileSync(MEDIA_FILE, JSON.stringify(media, null, 2));
-  } catch (e) {
-    console.error("Error saving media store:", e);
-  }
-}
-
-export function getMediaById(id: string): MediaItem | undefined {
-  const media = getAllMedia();
-  return media.find(m => m.id === id);
-}
-
-export function incrementMediaViews(id: string): void {
-  const media = getAllMedia();
-  const item = media.find(m => m.id === id);
-  if (item) {
-    item.views_count = (item.views_count || 0) + 1;
-    saveAllMedia(media);
-    saveMediaToFirestore(item);
-  }
-}
-
-export function addMedia(newMedia: Omit<MediaItem, 'id' | 'created_at' | 'views_count'>): MediaItem {
-  const media = getAllMedia();
-  const id = `media-${crypto.randomUUID()}`;
-  const created_at = new Date().toISOString();
-
-  const item: MediaItem = {
-    ...newMedia,
-    id,
-    created_at,
-    views_count: 0
-  };
-
-  media.unshift(item);
-  saveAllMedia(media);
-  saveMediaToFirestore(item);
-  return item;
-}
-
-export function updateMedia(id: string, updates: Partial<MediaItem>): MediaItem | null {
-  const media = getAllMedia();
-  const index = media.findIndex(m => m.id === id);
-  if (index === -1) return null;
-
-  media[index] = { ...media[index], ...updates };
-  saveAllMedia(media);
-  saveMediaToFirestore(media[index]);
-  return media[index];
-}
-
-export function deleteMedia(id: string): boolean {
-  let media = getAllMedia();
-  const target = media.find(m => m.id === id);
-  if (!target) return false;
-
-  media = media.filter(m => m.id !== id);
-  saveAllMedia(media);
-  deleteMediaFromFirestore(id);
-  return true;
-}
-

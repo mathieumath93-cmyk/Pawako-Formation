@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  pawako-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pawako_formation_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - SESSION_SECRET=${SESSION_SECRET:-super-secret-doc-vault-key-2026}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - pawako_data:/app/data
+      - pawako_uploads:/app/uploads
+
+volumes:
+  pawako_data:
+    driver: local
+  pawako_uploads:
+    driver: local

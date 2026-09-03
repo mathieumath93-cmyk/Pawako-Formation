@@ -56,7 +56,7 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
           
           <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-sky-400/10 border border-sky-400/20 text-sky-400 text-xs font-semibold mb-6 shadow-inner">
             <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
-            <span>FLEMIX & DOCS • PDF Flipping Book & Vidéos Sécurisées</span>
+            <span>PAWAKO FORMATION • PDF Flipping Book & Vidéos Sécurisées</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
@@ -67,9 +67,8 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Accédez aux supports de formation FLEMIX & DOCS avec effet de pages feuilletables interactives, vidéo de cours intégrée, protection par mot de passe et espaces de monétisation Google AdSense & Adsterra.
+            Accédez aux supports de formation PAWAKO avec effet de pages feuilletables interactives, vidéo de cours intégrée, protection par mot de passe et espaces de monétisation Adsterra (Bannières, Popunder, Social Bar).
           </p>
-
 
           {/* Quick Slug Access Input Box */}
           <div className="max-w-xl mx-auto glass-card p-2.5 rounded-2xl shadow-2xl mb-12">
@@ -121,11 +120,10 @@ export const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-8">
           <span className="text-[10px] font-bold tracking-widest text-sky-400 uppercase font-mono">
-            Catalogue FLEMIX & DOCS
+            Catalogue PAWAKO FORMATION
           </span>
           <h2 className="text-xl sm:text-2xl font-bold text-white">Modules de Formation Disponibles</h2>
         </div>
-
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {sampleDocs.map((doc) => (

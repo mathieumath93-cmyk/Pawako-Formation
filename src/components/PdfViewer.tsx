@@ -30,22 +30,18 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 // Set up PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker || `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version || '6.2.108'}/build/pdf.worker.min.mjs`;
 
-import { Film } from 'lucide-react';
-
 interface PdfViewerProps {
   slug: string;
   token: string;
   docInfo: DocumentPublicInfo | null;
   onLockSession?: () => void;
-  navigate?: (route: string) => void;
 }
 
 export const PdfViewer: React.FC<PdfViewerProps> = ({
   slug,
   token,
   docInfo,
-  onLockSession,
-  navigate
+  onLockSession
 }) => {
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
@@ -276,12 +272,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           </div>
           <div>
             <h1 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-              <span>{docInfo?.title || 'FLEMIX & DOCS - Support de Cours'}</span>
+              <span>{docInfo?.title || 'PAWAKO Formation - Support de Cours'}</span>
               <span className="text-[10px] font-mono font-normal px-2 py-0.5 rounded bg-sky-400/10 text-sky-400 border border-sky-400/20 uppercase tracking-wider">
                 FLIPPING BOOK ACTIVE
               </span>
             </h1>
-
             <p className="text-xs text-slate-400">
               Mode livre feuilletable sécurisé. Liens publics, impression et téléchargement verrouillés.
             </p>
@@ -289,21 +284,13 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => { if (navigate) navigate('/'); else window.location.href = '/'; }}
-            className="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl transition shadow-md shadow-red-600/30 flex items-center space-x-1.5"
-          >
-            <Film className="w-3.5 h-3.5" />
-            <span>Regarder Films & Séries sur Flemix</span>
-          </button>
-
           {onLockSession && (
             <button
               onClick={onLockSession}
               className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-xl border border-slate-700 transition flex items-center space-x-1"
             >
               <Shield className="w-3.5 h-3.5 text-sky-400" />
-              <span>Verrouiller</span>
+              <span>Verrouiller la Session</span>
             </button>
           )}
         </div>
@@ -613,13 +600,12 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
       <div className="mt-8 p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-center text-xs text-slate-500 space-y-1">
         <p className="font-semibold text-slate-400 flex items-center justify-center gap-1">
           <Shield className="w-3.5 h-3.5 text-sky-400" />
-          FLEMIX & DOCS • Plateforme Sécurisée & Monétisée
+          PAWAKO FORMATION • Plateforme Sécurisée & Monétisée
         </p>
         <p>
-          Ce support est diffusé via un lecteur Flipbook interactif à jeton d'accès temporaire.
+          Ce support est diffusé via un lecteur Flipbook interactif à jeton d'accès temporaire. Impression et exportation directes désactivées.
         </p>
       </div>
-
     </div>
   );
 };

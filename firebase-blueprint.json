@@ -1,36 +1,38 @@
 {
   "entities": {
-    "media": {
-      "title": "Media Items",
-      "description": "Catalog of movies and TV series for Flemix",
+    "DocumentItem": {
+      "title": "DocumentItem",
+      "description": "Protected course PDF document metadata",
+      "type": "object",
       "properties": {
+        "id": { "type": "string" },
         "title": { "type": "string" },
-        "type": { "type": "string" },
         "description": { "type": "string" },
-        "genre": { "type": "string" },
-        "release_year": { "type": "number" },
-        "rating": { "type": "string" },
-        "quality_badge": { "type": "string" },
-        "poster_url": { "type": "string" },
-        "banner_url": { "type": "string" },
-        "stream_url": { "type": "string" },
+        "pdf_file_path": { "type": "string" },
+        "unique_slug": { "type": "string" },
+        "password_hash": { "type": "string" },
+        "password_plain": { "type": "string" },
         "created_at": { "type": "string" },
         "views_count": { "type": "number" },
-        "featured": { "type": "boolean" }
+        "ads_enabled": { "type": "boolean" },
+        "file_size": { "type": "number" },
+        "original_filename": { "type": "string" },
+        "video_url": { "type": "string" }
       },
-      "required": ["title", "type"]
+      "required": ["id", "title", "unique_slug", "password_hash"]
     },
-    "documents": {
-      "title": "Document Items",
-      "description": "Catalog of protected PDF courses",
+    "AdSettings": {
+      "title": "AdSettings",
+      "description": "Platform adsterra configuration settings",
+      "type": "object",
       "properties": {
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "slug": { "type": "string" },
-        "accessCode": { "type": "string" },
-        "views": { "type": "number" }
-      },
-      "required": ["title", "slug"]
+        "adsterraTopScript": { "type": "string" },
+        "adsterraBottomScript": { "type": "string" },
+        "adsterraBetweenScript": { "type": "string" },
+        "adsterraPopunderScript": { "type": "string" },
+        "adsterraSocialBarScript": { "type": "string" },
+        "globalAdsEnabled": { "type": "boolean" }
+      }
     }
   }
 }

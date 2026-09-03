@@ -20,70 +20,61 @@ export const AdSlot: React.FC<AdSlotProps> = ({ position, adsEnabled = true }) =
 
   const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
 
-  if (!adsEnabled || isAdminRoute || !settings || !settings.globalAdsEnabled) {
+  if (!adsEnabled || isAdminRoute || (settings && !settings.globalAdsEnabled)) {
     return null;
   }
 
   let rawScript = '';
   if (settings) {
-    if (position === 'top') rawScript = settings.adsterraTopScript || '';
-    else if (position === 'bottom') rawScript = settings.adsterraBottomScript || '';
-    else if (position === 'between-pages') rawScript = settings.adsterraBetweenScript || '';
-    else if (position === 'popunder') rawScript = settings.adsterraPopunderScript || '';
-    else if (position === 'social-bar') rawScript = settings.adsterraSocialBarScript || '';
+    if (position === 'top') rawScript = settings.adsterraTopScript;
+    else if (position === 'bottom') rawScript = settings.adsterraBottomScript;
+    else if (position === 'between-pages') rawScript = settings.adsterraBetweenScript;
+    else if (position === 'popunder') rawScript = settings.adsterraPopunderScript;
+    else if (position === 'social-bar') rawScript = settings.adsterraSocialBarScript;
   }
 
-  if (!rawScript || rawScript.trim() === '') {
-    return null;
-  }
-
-  // Inject user scripts into container safely if custom HTML / script tags / AdSense tags provided
+  // Inject user scripts into container safely if custom HTML provided
   useEffect(() => {
-    if (!adRef.current || !rawScript) return;
-    adRef.current.innerHTML = '';
-
-    if (rawScript.includes('<script') || rawScript.includes('<ins')) {
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = rawScript;
-
-      // First append non-script child nodes (like <ins class="adsbygoogle"> or <div>)
-      Array.from(tempDiv.childNodes).forEach((node) => {
-        if (node.nodeName !== 'SCRIPT') {
-          adRef.current?.appendChild(node.cloneNode(true));
-        }
-      });
-
-      // Then append and execute script nodes
-      const scripts = Array.from(tempDiv.querySelectorAll('script'));
-      scripts.forEach((oldScript) => {
-        const newScript = document.createElement('script');
-        if (oldScript.src) {
-          newScript.src = oldScript.src;
-          newScript.async = true;
-        } else {
-          newScript.textContent = oldScript.textContent;
-        }
-        adRef.current?.appendChild(newScript);
-      });
-
-      // If AdSense <ins> unit is present, trigger adsbygoogle push
-      if (rawScript.includes('adsbygoogle') || rawScript.includes('ca-pub-')) {
-        try {
-          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-        } catch (e) {
-          console.log('[AdSense] Push unit notice:', e);
-        }
-      }
-    } else {
+    if (adRef.current && rawScript && rawScript.includes('<script')) {
       adRef.current.innerHTML = rawScript;
+      // Re-run inline scripts
+      const scripts = adRef.current.getElementsByTagName('script');
+      for (let i = 0; i < scripts.length; i++) {
+        const s = document.createElement('script');
+        if (scripts[i].src) {
+          s.src = scripts[i].src;
+        } else {
+          s.textContent = scripts[i].textContent;
+        }
+        document.body.appendChild(s);
+      }
     }
   }, [rawScript]);
 
   // Special rendering for Floating Social Bar
   if (position === 'social-bar') {
     return (
-      <div id="ad-slot-social-bar" className="fixed bottom-4 left-4 z-50 pointer-events-auto">
-        <div ref={adRef} />
+      <div className="fixed bottom-4 left-4 z-40 max-w-sm pointer-events-auto" id="ad-slot-social-bar">
+        <div className="glass-card p-3 rounded-2xl shadow-2xl border border-sky-400/30 backdrop-blur-xl flex items-center space-x-3">
+          <div className="p-2 rounded-xl bg-sky-400/10 border border-sky-400/20 text-sky-400 shrink-0">
+            <Bell className="w-4 h-4 animate-bounce text-sky-400" />
+          </div>
+          <div className="flex-1 text-left">
+            <div className="flex items-center space-x-1.5">
+              <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider font-mono">
+                Adsterra Social Bar
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            </div>
+            <p className="text-xs font-semibold text-slate-200">
+              Offres & Formations PAWAKO
+            </p>
+          </div>
+          <span className="text-[9px] bg-sky-400/20 text-sky-300 font-mono px-2 py-0.5 rounded-full">
+            AD
+          </span>
+        </div>
+        {rawScript && <div ref={adRef} />}
       </div>
     );
   }
@@ -92,29 +83,60 @@ export const AdSlot: React.FC<AdSlotProps> = ({ position, adsEnabled = true }) =
   if (position === 'popunder') {
     return (
       <div id="ad-slot-popunder" className="hidden">
-        <div ref={adRef} />
+        {rawScript ? (
+          <div ref={adRef} />
+        ) : (
+          <script dangerouslySetInnerHTML={{ __html: `console.log('Adsterra Popunder Ready');` }} />
+        )}
       </div>
     );
   }
 
   return (
-    <div className="w-full my-4 px-2 select-none flex justify-center" id={`ad-slot-${position}`}>
-      <div className="relative overflow-hidden rounded-xl glass-card p-4 shadow-lg border border-sky-400/20 w-full max-w-lg text-center flex flex-col items-center justify-center">
-        <div className="flex items-center justify-between w-full border-b border-slate-800/80 pb-2 mb-3">
+    <div className="w-full my-4 px-2 select-none" id={`ad-slot-${position}`}>
+      <div className="relative overflow-hidden rounded-xl glass-card p-4 shadow-lg transition-all border border-sky-400/20 hover:border-sky-400/40">
+        <div className="flex items-center justify-between border-b border-slate-800/80 pb-2 mb-3">
           <div className="flex items-center space-x-1.5">
             <span className="flex h-2 w-2 rounded-full bg-sky-400 animate-pulse"></span>
             <span className="text-[10px] font-bold tracking-widest text-sky-400 uppercase font-mono">
-              Espace Publicitaire
+              Espace Publicitaire Adsterra ({position})
             </span>
           </div>
           <div className="flex items-center space-x-1 text-[10px] text-slate-400 font-medium">
-            <Sparkles className="w-3 h-3 text-sky-400" />
-            <span>Google AdSense & Adsterra</span>
+            <DollarSign className="w-3 h-3 text-sky-400" />
+            <span>Monétisation Adsterra Active</span>
           </div>
         </div>
 
         {/* Custom Adsterra Script Output Container */}
-        <div ref={adRef} className="flex justify-center items-center my-1 min-h-[50px] w-full" />
+        {rawScript && rawScript.includes('<script') ? (
+          <div ref={adRef} className="flex justify-center items-center my-2" />
+        ) : (
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-slate-950/60 p-3 rounded-lg border border-slate-800/80">
+            <div className="flex items-center space-x-3 text-left">
+              <div className="p-2 rounded-lg bg-sky-400/10 border border-sky-400/20 text-sky-400">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-200">
+                  {position === 'top' && 'Bannière Haute Adsterra (Leaderboard 728x90)'}
+                  {position === 'bottom' && 'Bannière Basse Adsterra (300x250 Canvas)'}
+                  {position === 'between-pages' && 'Bannière In-Book Adsterra (Entre les pages)'}
+                  {position === 'sidebar' && 'Bannière Latérale Adsterra'}
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  Prêt pour l'insertion de vos scripts de monétisation Adsterra
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <span className="px-2.5 py-1 text-[10px] font-mono rounded bg-sky-400/10 text-sky-300 border border-sky-400/30">
+                728x90 / 300x250 / Popunder / Social Bar
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

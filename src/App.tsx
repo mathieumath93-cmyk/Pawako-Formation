@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
-import { StreamingHub } from './components/StreamingHub';
 import { HomePage } from './components/HomePage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { PasswordProtection } from './components/PasswordProtection';
 import { PdfViewer } from './components/PdfViewer';
-import { AdSlot } from './components/AdSlot';
 import { DocumentPublicInfo } from './types';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<string>(window.location.pathname);
   
-  // Query param for initial media modal
-  const [initialMediaId, setInitialMediaId] = useState<string | null>(null);
-
   // Document state for /doc/[slug]
   const [docSlug, setDocSlug] = useState<string | null>(null);
   const [docInfo, setDocInfo] = useState<DocumentPublicInfo | null>(null);
@@ -24,11 +19,6 @@ export default function App() {
   // Parse path and handle navigation
   const parsePath = (path: string) => {
     setCurrentRoute(path);
-
-    // Check media query param (e.g. /?media=media-seed-001)
-    const urlParams = new URLSearchParams(window.location.search);
-    const mediaId = urlParams.get('media');
-    setInitialMediaId(mediaId);
 
     // Check if route is /doc/[slug]
     const docMatch = path.match(/^\/doc\/([a-zA-Z0-9_-]+)/);
@@ -59,12 +49,12 @@ export default function App() {
     try {
       const res = await fetch(`/api/doc/${encodeURIComponent(slug)}/info`);
       if (!res.ok) {
-        throw new Error('Document introuvable ou URL invalide');
+        throw new Error('Document not found or invalid access URL');
       }
       const data = await res.json();
       setDocInfo(data);
     } catch (err: any) {
-      setDocInfoError(err.message || 'Document introuvable');
+      setDocInfoError(err.message || 'Document not found');
     } finally {
       setIsLoadingDocInfo(false);
     }
@@ -104,44 +94,40 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-red-600 selection:text-white">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white">
       {/* Navigation Bar */}
       <Navbar currentRoute={currentRoute} navigate={navigate} />
 
       {/* Main View Router */}
       <main>
-        {/* Default Route: Streaming Catalog (Flemix) */}
-        {!docSlug && !currentRoute.startsWith('/admin') && (
-          <StreamingHub navigate={navigate} initialMediaId={initialMediaId} />
-        )}
+        {/* Route: Home / */}
+        {currentRoute === '/' && <HomePage navigate={navigate} />}
 
         {/* Route: Admin /admin */}
-        {currentRoute.startsWith('/admin') && (
-          <AdminDashboard navigate={navigate} />
-        )}
+        {currentRoute.startsWith('/admin') && <AdminDashboard navigate={navigate} />}
 
         {/* Route: Document Viewer /doc/[slug] */}
         {docSlug && (
           <div className="py-6">
             {isLoadingDocInfo && (
               <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-3 text-slate-400">
-                <div className="w-10 h-10 border-4 border-sky-400/20 border-t-sky-400 rounded-full animate-spin" />
-                <p className="text-xs font-medium">Chargement du profil de sécurité du document...</p>
+                <div className="w-10 h-10 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+                <p className="text-xs font-medium">Fetching document security profile...</p>
               </div>
             )}
 
             {!isLoadingDocInfo && docInfoError && (
               <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 text-center">
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md shadow-2xl">
-                  <h2 className="text-lg font-bold text-white mb-2">404 - Document Introuvable</h2>
+                  <h2 className="text-lg font-bold text-white mb-2">404 - Document Not Found</h2>
                   <p className="text-xs text-slate-400 mb-6">
-                    Le lien de cours <code className="text-sky-400 font-mono">"{docSlug}"</code> n'existe pas ou n'est plus disponible.
+                    The document slug <code className="text-indigo-400 font-mono">"{docSlug}"</code> does not exist or has been deleted by the administrator.
                   </p>
                   <button
                     onClick={() => navigate('/')}
-                    className="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl transition shadow-lg shadow-red-600/30"
+                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition"
                   >
-                    Aller au Streaming Flemix
+                    Back to Home
                   </button>
                 </div>
               </div>
@@ -161,7 +147,6 @@ export default function App() {
                     token={docToken}
                     docInfo={docInfo}
                     onLockSession={handleLockSession}
-                    navigate={navigate}
                   />
                 )}
               </>
@@ -169,22 +154,6 @@ export default function App() {
           </div>
         )}
       </main>
-
-      {/* Discreet Footer with Admin Link */}
-      <footer className="border-t border-slate-900 py-6 text-center text-[11px] text-slate-600">
-        <p>© Flemix Streaming • Plateforme Haute Définition</p>
-        <button
-          onClick={() => navigate('/admin')}
-          className="mt-2 text-[10px] text-slate-700 hover:text-slate-500 underline transition"
-        >
-          Espace Administration
-        </button>
-      </footer>
-
-      {/* Global Ad Slots (Popunder & Floating Social Bar) */}
-      <AdSlot position="popunder" />
-      <AdSlot position="social-bar" />
     </div>
   );
 }
-

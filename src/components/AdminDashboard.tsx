@@ -21,8 +21,7 @@ import {
   Key,
   Video
 } from 'lucide-react';
-import { DocumentItem, AdSettings, MediaItem, Season, Episode } from '../types';
-import { Film, Tv, Play } from 'lucide-react';
+import { DocumentItem, AdSettings } from '../types';
 
 interface AdminDashboardProps {
   navigate: (route: string) => void;
@@ -36,32 +35,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
-  const [mediaList, setMediaList] = useState<MediaItem[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'docs' | 'media' | 'upload' | 'adsterra' | 'supabase' | 'security'>('media');
-
-  // New Media Form State
-  const [mediaTitle, setMediaTitle] = useState('');
-  const [mediaType, setMediaType] = useState<'movie' | 'series'>('movie');
-  const [mediaDescription, setMediaDescription] = useState('');
-  const [mediaGenre, setMediaGenre] = useState('Action');
-  const [mediaReleaseYear, setMediaReleaseYear] = useState<number>(2024);
-  const [mediaRating, setMediaRating] = useState('4.8/5');
-  const [mediaQualityBadge, setMediaQualityBadge] = useState('4K Ultra HD');
-  const [mediaPosterUrl, setMediaPosterUrl] = useState('');
-  const [mediaBannerUrl, setMediaBannerUrl] = useState('');
-  const [mediaStreamUrl, setMediaStreamUrl] = useState('');
-  const [mediaFeatured, setMediaFeatured] = useState(false);
-
-  // TV Series Seasons state builder
-  const [seriesEpTitle, setSeriesEpTitle] = useState('');
-  const [seriesEpUrl, setSeriesEpUrl] = useState('');
-  const [seriesEpisodes, setSeriesEpisodes] = useState<Episode[]>([]);
-
-  const [isSavingMedia, setIsSavingMedia] = useState(false);
-  const [mediaMsg, setMediaMsg] = useState({ type: '', text: '' });
-
+  const [activeTab, setActiveTab] = useState<'docs' | 'upload' | 'adsterra' | 'firebase' | 'security'>('docs');
 
   // New Document Upload State
   const [uploadTitle, setUploadTitle] = useState('');
@@ -100,7 +76,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     if (savedToken) {
       setIsAdminAuthenticated(true);
       fetchDocuments();
-      fetchMedia();
       fetchAdSettings();
     }
   }, []);
@@ -125,7 +100,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         localStorage.setItem('docvault_admin_token', data.adminToken);
         setIsAdminAuthenticated(true);
         fetchDocuments();
-        fetchMedia();
         fetchAdSettings();
       } else {
         setAuthError(data.message || 'Incorrect admin password.');
@@ -136,123 +110,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
       setIsLoggingIn(false);
     }
   };
-
-  const fetchMedia = async () => {
-    try {
-      const res = await fetch('/api/media');
-      const data = await res.json();
-      if (Array.isArray(data)) setMediaList(data);
-    } catch (err) {
-      console.error('Failed fetching media list:', err);
-    }
-  };
-
-  const handleAddMediaSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!mediaTitle.trim()) {
-      setMediaMsg({ type: 'error', text: 'Le titre du film ou de la série est requis.' });
-      return;
-    }
-
-    setIsSavingMedia(true);
-    setMediaMsg({ type: '', text: '' });
-
-    const adminToken = localStorage.getItem('docvault_admin_token') || '';
-
-    // Prepare seasons structure if series
-    let seasonsData: Season[] = [];
-    if (mediaType === 'series' && seriesEpisodes.length > 0) {
-      seasonsData = [
-        {
-          season_number: 1,
-          title: 'Saison 1',
-          episodes: seriesEpisodes
-        }
-      ];
-    }
-
-    try {
-      const res = await fetch('/api/admin/media', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminToken}`
-        },
-        body: JSON.stringify({
-          title: mediaTitle,
-          type: mediaType,
-          description: mediaDescription,
-          genre: mediaGenre,
-          release_year: mediaReleaseYear,
-          rating: mediaRating,
-          quality_badge: mediaQualityBadge,
-          poster_url: mediaPosterUrl || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600&auto=format&fit=crop',
-          banner_url: mediaBannerUrl,
-          stream_url: mediaStreamUrl,
-          seasons: seasonsData,
-          featured: mediaFeatured
-        })
-      });
-
-      const data = await res.json();
-      if (data.success && data.media) {
-        setMediaMsg({ type: 'success', text: `"${data.media.title}" a été ajouté au catalogue Flemix avec succès !` });
-        setMediaTitle('');
-        setMediaDescription('');
-        setMediaStreamUrl('');
-        setMediaPosterUrl('');
-        setMediaBannerUrl('');
-        setSeriesEpisodes([]);
-        fetchMedia();
-      } else {
-        setMediaMsg({ type: 'error', text: data.error || 'Erreur lors de l\'ajout du titre.' });
-      }
-    } catch (err) {
-      setMediaMsg({ type: 'error', text: 'Erreur réseau lors de la sauvegarde.' });
-    } finally {
-      setIsSavingMedia(false);
-    }
-  };
-
-  const handleDeleteMedia = async (id: string, title: string) => {
-    if (!window.confirm(`Voulez-vous vraiment supprimer "${title}" de Flemix ?`)) return;
-
-    const adminToken = localStorage.getItem('docvault_admin_token') || '';
-    try {
-      const res = await fetch(`/api/admin/media/${id}`, {
-        method: 'DELETE',
-        headers: { 
-          'Authorization': `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setMediaList((prev) => prev.filter((m) => m.id !== id));
-        setMediaMsg({ type: 'success', text: `"${title}" a été supprimé du catalogue avec succès.` });
-      } else {
-        alert(data.error || 'Erreur lors de la suppression.');
-      }
-    } catch (err) {
-      console.error('Erreur suppression média:', err);
-      alert('Erreur réseau lors de la suppression.');
-    }
-  };
-
-  const handleAddEpisodeToSeries = () => {
-    if (!seriesEpTitle.trim() || !seriesEpUrl.trim()) return;
-    const newEp: Episode = {
-      id: `ep-${Date.now()}`,
-      season_number: 1,
-      episode_number: seriesEpisodes.length + 1,
-      title: seriesEpTitle.trim(),
-      stream_url: seriesEpUrl.trim()
-    };
-    setSeriesEpisodes((prev) => [...prev, newEp]);
-    setSeriesEpTitle('');
-    setSeriesEpUrl('');
-  };
-
 
   const fetchDocuments = async () => {
     setIsLoadingDocs(true);
@@ -603,18 +460,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
       {/* Tabs */}
       <div className="flex space-x-2 border-b border-slate-800 mb-6 pb-2 overflow-x-auto">
         <button
-          onClick={() => setActiveTab('media')}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 shrink-0 ${
-            activeTab === 'media'
-              ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/30'
-              : 'text-slate-400 hover:text-white hover:bg-slate-900'
-          }`}
-        >
-          <Film className="w-4 h-4 text-red-300" />
-          <span>Gestion Films & Séries ({mediaList.length})</span>
-        </button>
-
-        <button
           onClick={() => setActiveTab('docs')}
           className={`px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 shrink-0 ${
             activeTab === 'docs'
@@ -623,7 +468,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           }`}
         >
           <FileText className="w-4 h-4" />
-          <span>Documents & Cours PDF ({documents.length})</span>
+          <span>All Documents ({documents.length})</span>
         </button>
 
         <button
@@ -635,9 +480,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           }`}
         >
           <Upload className="w-4 h-4" />
-          <span>Ajouter un PDF</span>
+          <span>Upload PDF</span>
         </button>
-
 
         <button
           onClick={() => setActiveTab('adsterra')}
@@ -648,7 +492,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           }`}
         >
           <DollarSign className="w-4 h-4" />
-          <span>Monétisation (AdSense & Adsterra)</span>
+          <span>Paramètres Adsterra</span>
         </button>
 
         <button
@@ -664,384 +508,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         </button>
 
         <button
-          onClick={() => setActiveTab('supabase')}
+          onClick={() => setActiveTab('firebase')}
           className={`px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 shrink-0 ${
-            activeTab === 'supabase'
+            activeTab === 'firebase'
               ? 'bg-sky-400 text-slate-950 font-bold shadow-md shadow-sky-400/20'
               : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
-          <Database className="w-4 h-4" />
-          <span>Supabase SQL & Setup</span>
+          <Database className="w-4 h-4 text-amber-400" />
+          <span>Firebase Firestore & Setup</span>
         </button>
       </div>
 
-      {/* TAB MEDIA: GESTION FILMS & SÉRIES (FLEMIX) */}
-      {activeTab === 'media' && (
-        <div className="space-y-8">
-          {/* Add New Movie or Series Card Form */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
-            <div className="mb-6 flex items-center justify-between border-b border-slate-800/80 pb-4">
-              <div>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Film className="w-5 h-5 text-red-500" />
-                  Ajouter un Film ou une Série au Catalogue Flemix
-                </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Mettez les liens de streaming (iframe, mp4, VidSrc, YouTube) pour que vos utilisateurs regardent directement les films et séries nativement.
-                </p>
-              </div>
-              <span className="text-xs bg-red-600/20 text-red-400 border border-red-500/30 font-mono px-3 py-1 rounded-full font-bold">
-                Lecteur Média Natif Active
-              </span>
-            </div>
-
-            {mediaMsg.text && (
-              <div
-                className={`p-4 mb-6 rounded-xl text-xs font-semibold flex items-center gap-2 ${
-                  mediaMsg.type === 'success'
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                    : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                }`}
-              >
-                <Sparkles className="w-4 h-4 shrink-0" />
-                <span>{mediaMsg.text}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleAddMediaSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                {/* Title */}
-                <div className="md:col-span-2 space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300 block">Titre du Film / Série *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="ex: Avatar: La Voie de l'Eau, Cyberpunk Edgerunners..."
-                    value={mediaTitle}
-                    onChange={(e) => setMediaTitle(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500"
-                  />
-                </div>
-
-                {/* Type: Film vs Série */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300 block">Type de Contenu *</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMediaType('movie')}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 border ${
-                        mediaType === 'movie'
-                          ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-600/30'
-                          : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
-                      }`}
-                    >
-                      <Film className="w-3.5 h-3.5" />
-                      <span>Film</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMediaType('series')}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 border ${
-                        mediaType === 'series'
-                          ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-600/30'
-                          : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
-                      }`}
-                    >
-                      <Tv className="w-3.5 h-3.5" />
-                      <span>Série TV</span>
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Description */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 block">Synopsis / Description</label>
-                <textarea
-                  rows={2}
-                  placeholder="Résumé de l'intrigue, des acteurs ou du cours vidéo..."
-                  value={mediaDescription}
-                  onChange={(e) => setMediaDescription(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500"
-                />
-              </div>
-
-              {/* Genre, Year, Rating, Quality */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300 block">Genre / Catégorie</label>
-                  <input
-                    type="text"
-                    placeholder="ex: Science-Fiction, Action, Drame"
-                    value={mediaGenre}
-                    onChange={(e) => setMediaGenre(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300 block">Année de sortie</label>
-                  <input
-                    type="number"
-                    value={mediaReleaseYear}
-                    onChange={(e) => setMediaReleaseYear(parseInt(e.target.value) || 2024)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300 block">Note / Évaluation</label>
-                  <input
-                    type="text"
-                    placeholder="ex: 8.8/10, 4.9/5"
-                    value={mediaRating}
-                    onChange={(e) => setMediaRating(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300 block">Badge Qualité</label>
-                  <select
-                    value={mediaQualityBadge}
-                    onChange={(e) => setMediaQualityBadge(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500"
-                  >
-                    <option value="4K Ultra HD">4K Ultra HD</option>
-                    <option value="1080p HD">1080p HD</option>
-                    <option value="HD VF">HD VF</option>
-                    <option value="HD VOSTFR">HD VOSTFR</option>
-                    <option value="CAM/Nouveau">CAM / Nouveau</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Poster Image URL & Banner */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300 block">URL de l'Affiche (Poster Image)</label>
-                  <input
-                    type="text"
-                    placeholder="https://... image poster vertical (.jpg, .png)"
-                    value={mediaPosterUrl}
-                    onChange={(e) => setMediaPosterUrl(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500"
-                  />
-                  <span className="text-[10px] text-slate-500 block">
-                    Conseil : Utilisez Unsplash, TMDB, Imgur ou collez un lien d'image direct.
-                  </span>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300 block">Bannière Hero (Optionnel)</label>
-                  <input
-                    type="text"
-                    placeholder="https://... image horizontale pour la vedette"
-                    value={mediaBannerUrl}
-                    onChange={(e) => setMediaBannerUrl(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500"
-                  />
-                </div>
-              </div>
-
-              {/* Stream Link for Movie or Episodes for Series */}
-              {mediaType === 'movie' ? (
-                <div className="space-y-1.5 bg-slate-950/80 p-4 rounded-xl border border-slate-800">
-                  <label className="text-xs font-bold text-red-400 block flex items-center space-x-1.5">
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Lien de Streaming du Film (Stream URL / Embed Link) *</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="ex: https://www.youtube.com/embed/..., https://vidsrc.to/embed/movie/..., ou lien MP4"
-                    value={mediaStreamUrl}
-                    onChange={(e) => setMediaStreamUrl(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500 font-mono"
-                  />
-                  <p className="text-[11px] text-slate-400">
-                    Saisissez n'importe quel lien embed d'hébergeur vidéo (iframe embed, VidSrc, YouTube, Dailymotion, Vimeo, serveur MP4) pour une lecture native.
-                  </p>
-                </div>
-              ) : (
-                /* Episode Builder for TV Series */
-                <div className="space-y-3 bg-slate-950/80 p-4 rounded-xl border border-slate-800">
-                  <label className="text-xs font-bold text-red-400 block flex items-center space-x-1.5">
-                    <Tv className="w-3.5 h-3.5" />
-                    <span>Gestion des Épisodes de la Série</span>
-                  </label>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <input
-                      type="text"
-                      placeholder="Titre de l'épisode (ex: Épisode 1: Le Début)"
-                      value={seriesEpTitle}
-                      onChange={(e) => setSeriesEpTitle(e.target.value)}
-                      className="sm:col-span-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Lien de streaming vidéo / embed..."
-                      value={seriesEpUrl}
-                      onChange={(e) => setSeriesEpUrl(e.target.value)}
-                      className="sm:col-span-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500 font-mono"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddEpisodeToSeries}
-                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition flex items-center justify-center space-x-1"
-                    >
-                      <Plus className="w-4 h-4 text-red-400" />
-                      <span>Ajouter l'Épisode</span>
-                    </button>
-                  </div>
-
-                  {/* Episodes List */}
-                  {seriesEpisodes.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      <span className="text-[11px] text-slate-400 font-bold block">Épisodes ajoutés ({seriesEpisodes.length}) :</span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {seriesEpisodes.map((ep, idx) => (
-                          <div key={ep.id} className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
-                            <div>
-                              <span className="font-mono text-red-400 font-bold mr-2">Ép. {ep.episode_number}</span>
-                              <span className="text-white font-semibold">{ep.title}</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => setSeriesEpisodes(prev => prev.filter(e => e.id !== ep.id))}
-                              className="text-slate-500 hover:text-red-400 text-xs px-2"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Featured Checkbox */}
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="mediaFeatured"
-                  checked={mediaFeatured}
-                  onChange={(e) => setMediaFeatured(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-800 text-red-600 focus:ring-red-500 bg-slate-950"
-                />
-                <label htmlFor="mediaFeatured" className="text-xs text-slate-300 font-semibold cursor-pointer">
-                  Mettre en vedette dans la grande bannière Hero Flemix
-                </label>
-              </div>
-
-              {/* Submit Button */}
-              <div className="pt-2 flex justify-end">
-                <button
-                  type="submit"
-                  disabled={isSavingMedia}
-                  className="px-6 py-3 bg-red-600 hover:bg-red-500 disabled:bg-slate-800 text-white text-xs font-bold rounded-xl transition shadow-xl shadow-red-600/30 flex items-center space-x-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>{isSavingMedia ? 'Enregistrement...' : 'Publier sur le Catalogue Flemix'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-
-          {/* Media Items Table */}
-          <div className="glass-card rounded-2xl overflow-hidden shadow-xl">
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Film className="w-4 h-4 text-red-400" />
-                <span>Films & Séries Actifs ({mediaList.length})</span>
-              </h3>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-950 text-slate-400 text-[11px] uppercase tracking-wider border-b border-slate-800">
-                  <tr>
-                    <th className="px-6 py-3.5 font-semibold">Titre & Affiche</th>
-                    <th className="px-4 py-3.5 font-semibold">Type & Genre</th>
-                    <th className="px-4 py-3.5 font-semibold">Qualité</th>
-                    <th className="px-4 py-3.5 font-semibold">Vues</th>
-                    <th className="px-4 py-3.5 font-semibold">Lien Stream</th>
-                    <th className="px-6 py-3.5 font-semibold text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60">
-                  {mediaList.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-center py-12 text-slate-500">
-                        Aucun film ou série enregistré. Remplissez le formulaire ci-dessus pour en ajouter !
-                      </td>
-                    </tr>
-                  ) : (
-                    mediaList.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-800/30 transition">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center space-x-3">
-                            <img
-                              src={item.poster_url}
-                              alt={item.title}
-                              className="w-10 h-14 object-cover rounded-lg border border-slate-800 shrink-0"
-                            />
-                            <div>
-                              <span className="font-bold text-white block text-sm">{item.title}</span>
-                              <span className="text-[10px] text-slate-500">{item.release_year}</span>
-                            </div>
-                          </div>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono mr-2 ${item.type === 'movie' ? 'bg-red-500/20 text-red-400' : 'bg-sky-500/20 text-sky-400'}`}>
-                            {item.type === 'movie' ? 'FILM' : 'SÉRIE'}
-                          </span>
-                          <span className="text-slate-400">{item.genre}</span>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-[10px] font-bold">
-                            {item.quality_badge || 'HD'}
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-4 font-mono text-slate-300">
-                          {item.views_count} vues
-                        </td>
-
-                        <td className="px-4 py-4 max-w-xs truncate font-mono text-[11px] text-slate-500">
-                          {item.stream_url || (item.seasons ? `${item.seasons.reduce((acc, s) => acc + (s.episodes?.length || 0), 0)} épisodes` : 'Pas de lien')}
-                        </td>
-
-                        <td className="px-6 py-4 text-right">
-                          <button
-                            onClick={() => handleDeleteMedia(item.id, item.title)}
-                            className="p-2 text-slate-400 hover:text-red-400 bg-slate-900 hover:bg-slate-800 rounded-xl border border-slate-800 transition"
-                            title="Supprimer du catalogue"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* TAB 1: ALL DOCUMENTS TABLE */}
       {activeTab === 'docs' && (
-
         <div className="glass-card rounded-2xl overflow-hidden shadow-xl">
           {/* Table Search Header */}
           <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -1359,27 +839,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         </div>
       )}
 
-      {/* TAB 3: ADS & MONETIZATION SETTINGS */}
+      {/* TAB 3: ADSTERRA SETTINGS */}
       {activeTab === 'adsterra' && (
         <div className="max-w-3xl mx-auto bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
           <div className="mb-6">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-sky-400" />
-              Configuration Monétisation (Google AdSense & 3nbf4.com Service Worker)
+              Configuration Monétisation Adsterra (Bannière, Popunder, Social Bar)
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Google AdSense et le Service Worker <code>3nbf4.com</code> (Zone 11571811) sont actifs globalement dans le <code>&lt;head&gt;</code> et dans le Service Worker <code>/sw.js</code>. Vous pouvez également personnaliser vos blocs d'annonces ci-dessous.
+            <p className="text-xs text-slate-400">
+              Collez vos scripts Adsterra ci-dessous pour activer le Popunder, la Social Bar et les bannières publicitaires sur PAWAKO FORMATION.
             </p>
           </div>
 
-          <div className="mb-6 p-4 bg-sky-400/10 border border-sky-400/20 rounded-xl text-xs text-sky-200 flex flex-col gap-2">
-            <div className="flex items-center gap-2 font-bold text-sky-400">
-              <ShieldCheck className="w-5 h-5 shrink-0" />
-              <span>Réseau Publicitaire & Service Worker Intégré</span>
-            </div>
-            <p className="text-[11px] text-slate-300">
-              Le Service Worker <code>/sw.js</code> configuré avec votre domaine <code>3nbf4.com</code> (Zone 11571811) est automatiquement enregistré. Toutes les annonces sont isolées des interfaces d'administration.
-            </p>
+          <div className="mb-6 p-3.5 bg-sky-400/10 border border-sky-400/20 rounded-xl text-xs text-sky-200 flex items-center gap-2.5">
+            <ShieldCheck className="w-5 h-5 text-sky-400 shrink-0" />
+            <span><strong>Isolation Publicitaire :</strong> Les publicités sont diffusées <u>uniquement</u> sur les interfaces de lecture des documents PDF (Flipping Book) pour les étudiants, et sont totalement désactivées dans l'espace d'administration.</span>
           </div>
 
           {adSaveStatus && (
@@ -1399,72 +874,72 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                 type="checkbox"
                 checked={adSettings.globalAdsEnabled}
                 onChange={(e) => setAdSettings({ ...adSettings, globalAdsEnabled: e.target.checked })}
-                className="w-5 h-5 text-sky-400 rounded focus:ring-sky-400 cursor-pointer"
+                className="w-5 h-5 text-sky-400 rounded focus:ring-sky-400"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-sky-300 mb-1">
-                Espace Supérieur (Haut) - Code AdSense / Adsterra (&lt;AdSlot position="top" /&gt;)
-              </label>
-              <textarea
-                value={adSettings.adsterraTopScript}
-                onChange={(e) => setAdSettings({ ...adSettings, adsterraTopScript: e.target.value })}
-                rows={3}
-                placeholder="<!-- Collez un bloc <ins class='adsbygoogle'> ou un script Adsterra ici -->"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-sky-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-sky-300 mb-1">
-                Espace Inter-Page Flipbook - Code AdSense / Adsterra (&lt;AdSlot position="between-pages" /&gt;)
-              </label>
-              <textarea
-                value={adSettings.adsterraBetweenScript}
-                onChange={(e) => setAdSettings({ ...adSettings, adsterraBetweenScript: e.target.value })}
-                rows={3}
-                placeholder="<!-- Collez un bloc <ins class='adsbygoogle'> ou un script Adsterra ici -->"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-sky-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-sky-300 mb-1">
-                Espace Inférieur (Bas) - Code AdSense / Adsterra (&lt;AdSlot position="bottom" /&gt;)
-              </label>
-              <textarea
-                value={adSettings.adsterraBottomScript}
-                onChange={(e) => setAdSettings({ ...adSettings, adsterraBottomScript: e.target.value })}
-                rows={3}
-                placeholder="<!-- Collez un bloc <ins class='adsbygoogle'> ou un script Adsterra ici -->"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-sky-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-sky-300 mb-1">
-                Espace Popunder (&lt;AdSlot position="popunder" /&gt;)
+                Espace Popunder Adsterra (&lt;AdSlot position="popunder" /&gt;)
               </label>
               <textarea
                 value={adSettings.adsterraPopunderScript}
                 onChange={(e) => setAdSettings({ ...adSettings, adsterraPopunderScript: e.target.value })}
                 rows={3}
-                placeholder="<!-- Collez le script Popunder Adsterra/Réseau ici -->"
+                placeholder="<!-- Collez le script Popunder Adsterra ici -->"
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-sky-400 font-mono focus:outline-none focus:border-sky-400"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-sky-300 mb-1">
-                Espace Social Bar / Format Flottant (&lt;AdSlot position="social-bar" /&gt;)
+                Espace Social Bar Adsterra (&lt;AdSlot position="social-bar" /&gt;)
               </label>
               <textarea
                 value={adSettings.adsterraSocialBarScript}
                 onChange={(e) => setAdSettings({ ...adSettings, adsterraSocialBarScript: e.target.value })}
                 rows={3}
-                placeholder="<!-- Collez le script Social Bar / Flottant ici -->"
+                placeholder="<!-- Collez le script Social Bar Adsterra ici -->"
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-sky-400 font-mono focus:outline-none focus:border-sky-400"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                Bannière Supérieure Adsterra (&lt;AdSlot position="top" /&gt;)
+              </label>
+              <textarea
+                value={adSettings.adsterraTopScript}
+                onChange={(e) => setAdSettings({ ...adSettings, adsterraTopScript: e.target.value })}
+                rows={3}
+                placeholder="<!-- Collez le script Bannière Haut Adsterra ici -->"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-sky-400"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                Bannière Inter-Page Flipbook (&lt;AdSlot position="between-pages" /&gt;)
+              </label>
+              <textarea
+                value={adSettings.adsterraBetweenScript}
+                onChange={(e) => setAdSettings({ ...adSettings, adsterraBetweenScript: e.target.value })}
+                rows={3}
+                placeholder="<!-- Collez le script Inter-Page Adsterra ici -->"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-sky-400"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                Bannière Inférieure Adsterra (&lt;AdSlot position="bottom" /&gt;)
+              </label>
+              <textarea
+                value={adSettings.adsterraBottomScript}
+                onChange={(e) => setAdSettings({ ...adSettings, adsterraBottomScript: e.target.value })}
+                rows={3}
+                placeholder="<!-- Collez le script Bannière Bas Adsterra ici -->"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-emerald-400 font-mono focus:outline-none focus:border-sky-400"
               />
             </div>
 
@@ -1479,78 +954,73 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         </div>
       )}
 
-      {/* TAB 4: SUPABASE SQL & SETUP */}
-      {activeTab === 'supabase' && (
+      {/* TAB 4: FIREBASE FIRESTORE & SETUP */}
+      {activeTab === 'firebase' && (
         <div className="max-w-4xl mx-auto bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
           <div className="mb-6 flex justify-between items-center">
             <div>
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <Database className="w-5 h-5 text-indigo-400" />
-                Complete Supabase SQL Database & Storage Setup
+                <Database className="w-5 h-5 text-amber-400" />
+                Firebase Firestore & Authentication Status
               </h2>
               <p className="text-xs text-slate-400">
-                To connect your own external Supabase project, execute this SQL schema in your Supabase SQL Editor.
+                Configuration active pour Firebase Firestore et la persistance cloud de vos documents et paramètres.
               </p>
             </div>
             <button
               onClick={() => {
-                const sqlText = `-- Complete Supabase SQL Schema for Secure PDF Viewer\n...`;
-                navigator.clipboard.writeText(sqlText);
-                alert('Supabase SQL Schema copied to clipboard!');
+                const rulesText = `rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /documents/{documentId} {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n    match /ad_settings/{settingId} {\n      allow read: if true;\n      allow write: if request.auth != null;\n    }\n  }\n}`;
+                navigator.clipboard.writeText(rulesText);
+                alert('Règles Firestore copiées dans le presse-papier !');
               }}
-              className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-xl transition flex items-center space-x-1"
+              className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium rounded-xl transition flex items-center space-x-1 shadow-lg shadow-amber-600/20"
             >
               <Copy className="w-3.5 h-3.5" />
-              <span>Copy SQL</span>
+              <span>Copier Règles Firestore</span>
             </button>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold block mb-1">ID Projet Firebase</span>
+              <span className="text-xs font-mono font-bold text-amber-400">gen-lang-client-0832008958</span>
+            </div>
+            <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold block mb-1">Base de Données Firestore</span>
+              <span className="text-xs font-mono font-bold text-sky-400">ai-studio-pawakoformation-f2745a41-31a8-415a-b683-9c3da6c5c38a</span>
+            </div>
+          </div>
+
           <div className="space-y-4">
-            <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs text-indigo-300 overflow-x-auto">
+            <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs text-amber-300 overflow-x-auto">
+              <span className="text-[11px] text-slate-400 font-sans font-semibold block mb-2">Aperçu des Règles de Sécurité Security Rules (firestore.rules) :</span>
               <pre className="whitespace-pre-wrap leading-relaxed">
-{`-- 1. Create Documents Table
-CREATE TABLE IF NOT EXISTS public.documents (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  description TEXT,
-  pdf_file_path TEXT NOT NULL,
-  unique_slug TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  ads_enabled BOOLEAN DEFAULT TRUE,
-  views_count BIGINT DEFAULT 0,
-  file_size BIGINT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 2. Create Private Storage Bucket for PDFs
-INSERT INTO storage.buckets (id, name, public) 
-VALUES ('private-pdfs', 'private-pdfs', false)
-ON CONFLICT (id) DO NOTHING;
-
--- 3. Enable Row Level Security (RLS)
-ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
-
--- 4. Security Policy: Allow lookup for public info
-CREATE POLICY "Public document info lookup" ON public.documents
-  FOR SELECT USING (true);
-
--- 5. Security Policy: Deny public direct URL access to storage bucket
-CREATE POLICY "Deny public storage access" ON storage.objects
-  FOR SELECT USING (bucket_id = 'private-pdfs' AND auth.role() = 'service_role');`}
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /documents/{documentId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /ad_settings/{settingId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}`}
               </pre>
             </div>
 
             <div className="bg-slate-950/60 border border-slate-800 p-4 rounded-xl text-xs text-slate-400 space-y-2">
               <h4 className="font-bold text-white flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                Supabase Environment Variable Setup Guide
+                Variables d'Environnement Firebase Configurees
               </h4>
-              <p>Add these variables in your platform settings or <code className="text-indigo-300">.env</code> file:</p>
+              <p>Champs configurés dans <code className="text-amber-300">firebase-applet-config.json</code> & <code className="text-amber-300">.env</code> :</p>
               <ul className="list-disc list-inside font-mono text-[11px] text-slate-300 space-y-1 pl-2">
-                <li>SUPABASE_URL="https://your-project.supabase.co"</li>
-                <li>SUPABASE_ANON_KEY="your-anon-key"</li>
-                <li>SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"</li>
+                <li>FIREBASE_PROJECT_ID="gen-lang-client-0832008958"</li>
+                <li>FIREBASE_FIRESTORE_DATABASE_ID="ai-studio-pawakoformation-f2745a41-31a8-415a-b683-9c3da6c5c38a"</li>
+                <li>FIREBASE_AUTH_DOMAIN="gen-lang-client-0832008958.firebaseapp.com"</li>
               </ul>
             </div>
           </div>
